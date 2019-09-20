@@ -1,0 +1,16 @@
+#rasterio>=1.0a12
+#fiona
+#shapely
+#pandas
+#geopandas
+#pyproj
+#mapbox
+#rasterstats
+#mapboxgl
+#jupyter
+#mercantile
+#scipy
+#scikit-learn
+#seaborn
+#statsmodels
+#ggplot
