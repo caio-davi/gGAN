@@ -4,6 +4,6 @@ ADD requirements.txt requirements.txt
 
 RUN python -m pip install -r requirements.txt 
 
-WORKDIR /src
+WORKDIR /workspace
 COPY . .
 EXPOSE 8888

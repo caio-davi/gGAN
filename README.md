@@ -16,3 +16,9 @@ $ docker-compose build
 ## Related Researches
 
 - [Generative adversarial networks simulate gene expression and predict perturbations in single cells](https://www.biorxiv.org/content/10.1101/262501v2.full) - [Github](https://github.com/luslab/scRNAseq-WGAN-GP)
+
+
+```
+docker build . -t csce
+docker  run -it -v /Users/caio/workspace/csce633:/workspace csce bash
+```
