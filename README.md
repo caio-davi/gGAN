@@ -7,18 +7,15 @@ You can find the paper for the project [here](https://www.overleaf.com/project/5
 
 ## Getting Started
 
-Just compose build to create the `csce633_web` docker container:
+Just build and run the `csce` docker container:
 
-```bash
-$ docker-compose build
+```
+docker build . -t csce
+docker  run -it -v [local_directory]:/workspace csce bash
 ```
 
 ## Related Researches
 
 - [Generative adversarial networks simulate gene expression and predict perturbations in single cells](https://www.biorxiv.org/content/10.1101/262501v2.full) - [Github](https://github.com/luslab/scRNAseq-WGAN-GP)
 
-
-```
-docker build . -t csce
-docker  run -it -v /Users/caio/workspace/csce633:/workspace csce bash
-```
+This work is already included in this repository in the directory `/src/scRNAseq-WGAN`. Unfortunately, the database used here is too large to a gitHub repository, therefore it has to be downloaded following the instructions on their [Github](https://github.com/luslab/scRNAseq-WGAN-GP).
