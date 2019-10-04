@@ -5,6 +5,7 @@ matplotlib
 scikit-learn
 seaborn
 tensorflow
+biopython
 
 
 #rasterio>=1.0a12

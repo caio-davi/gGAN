@@ -1,9 +1,11 @@
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
 from numpy import genfromtxt
 from sklearn.preprocessing import MinMaxScaler
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 n_train_steps = 10000
@@ -218,5 +220,5 @@ gen_cells = sess.run(G, {z : noise_prior(1, 100)})
 
 for cell in range(num_cells_generate):
     out_gen_temp = sess.run(G, {z : noise_prior(1, 100)})
-    gen_cells = numpy.append(gen_cells, out_gen_temp, axis=0)
+    gen_cells = np.append(gen_cells, out_gen_temp, axis=0)
 

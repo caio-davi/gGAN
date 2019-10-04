@@ -1,2 +1,5 @@
 .DS_Store
 src/scRNAseq-WGAN/data/*
+src/scRNAseq-WGAN/models/*
+src/scRNAseq-WGAN/summaries/*
+*.pyc
