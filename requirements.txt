@@ -6,7 +6,9 @@ scikit-learn
 seaborn
 tensorflow
 biopython
-
+jupyter
+torch
+torchvision
 
 #rasterio>=1.0a12
 #fiona
@@ -17,7 +19,6 @@ biopython
 #mapbox
 #rasterstats
 #mapboxgl
-#jupyter
 #mercantile
 #scipy
 #scikit-learn
