@@ -1,5 +1,8 @@
 import pandas as pd
 import sys
+from numpy import genfromtxt
+import matplotlib.pyplot as plt
+from sklearn import preprocessing
 
 # Importing data and removing unnecessary headers
 labeled_data = pd.read_csv('labeled.csv', header=0)
@@ -44,6 +47,41 @@ def compare_encodes(code_A, code_B, max_diff=None):
     diff = pd.DataFrame(data, index=diff, columns=['code_a','freq_a','code_b','freq_b'])
     return diff if (max_diff) else snps
 
-labeled_code = most_frequents(labeled_data)
-unlabeled_code = most_frequents(unlabeled_data)
-diff = compare_encodes(labeled_code, unlabeled_code, 0.15)
+# This will normilize the data, but I'm not sure if I can make the way back
+# Since we want to generate new datasets, we will need to do it
+# Therefore, we have to rewrite this.
+def normilize_data(dataFrame):
+    for feature in dataFrame.columns:
+        df_coded = dataFrame 
+        setattr(df_coded, feature, getattr(dataFrame,feature).astype("category").cat.codes)
+    x = dataFrame.values 
+    min_max_scaler = preprocessing.MinMaxScaler()
+    x_scaled = min_max_scaler.fit_transform(x)
+    dataFrame = pd.DataFrame(x_scaled)
+    return dataFrame
+
+# Create a image of one sample of the dataset. 
+def create_image(sample, sample_row):
+    lim_inf = 0 
+    lim_sup = 0
+    data = []
+    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+    for i in range(21,294,21):
+        lim_sup = i
+        df = sample.iloc[sample_row:sample_row+1,lim_inf: lim_sup]
+        df.columns = cols
+        data.append(df)
+        lim_inf = lim_sup
+        
+    data = pd.concat(data)
+
+    fig = plt.figure(figsize = (10,10)) 
+    img = fig.add_subplot(111)
+    img.imshow(data.values, cmap='viridis')
+    plt.savefig('../images/real_sample_'+str(sample_row)+'.png')
+
+
+# labeled_code = most_frequents(labeled_data)
+# unlabeled_code = most_frequents(unlabeled_data)
+# diff = compare_encodes(labeled_code, unlabeled_code, 0.15)
+create_image(normilize_data(labeled_data), 5)
