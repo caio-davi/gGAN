@@ -11,7 +11,7 @@ Just build and run the `csce` docker container:
 
 ```
 docker build . -t csce
-docker  run -it -v [local_directory]:/workspace csce bash
+docker  run -it -v $PWD:/workspace csce bash
 ```
 
 ## Related Researches
