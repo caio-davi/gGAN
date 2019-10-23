@@ -57,11 +57,10 @@ def normilize_data(dataFrame):
     x = dataFrame.values 
     min_max_scaler = preprocessing.MinMaxScaler()
     x_scaled = min_max_scaler.fit_transform(x)
-    dataFrame = pd.DataFrame(x_scaled)
-    return dataFrame
+    return pd.DataFrame(x_scaled)
 
-# Create a image of one sample of the dataset. 
-def create_image(sample, sample_row):
+# Create a matrix of one sample of the dataset. 
+def create_matrix(sample, sample_row):
     lim_inf = 0 
     lim_sup = 0
     data = []
@@ -72,16 +71,21 @@ def create_image(sample, sample_row):
         df.columns = cols
         data.append(df)
         lim_inf = lim_sup
-        
-    data = pd.concat(data)
+    return pd.concat(data)
 
+# Create a image of a matrix (it must be normalized!) 
+def create_image(data):
     fig = plt.figure(figsize = (10,10)) 
     img = fig.add_subplot(111)
     img.imshow(data.values, cmap='viridis')
     plt.savefig('../images/real_sample_'+str(sample_row)+'.png')
 
-
-# labeled_code = most_frequents(labeled_data)
-# unlabeled_code = most_frequents(unlabeled_data)
-# diff = compare_encodes(labeled_code, unlabeled_code, 0.15)
-create_image(normilize_data(labeled_data), 5)
+def create_db(df, name):
+    df = normilize_data(df)
+    for i in range(0,len(df.index)):
+        new = create_matrix(df, i)
+        new.to_csv('./'+name+'/sample_'+str(i)+'.csv')
+    print('End')
+    
+create_db(unlabeled_data, 'unlabeled')
+# sys.exit()
