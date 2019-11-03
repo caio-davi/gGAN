@@ -9,7 +9,7 @@ biopython
 jupyter
 torch
 torchvision
-
+keras
 #rasterio>=1.0a12
 #fiona
 #shapely

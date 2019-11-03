@@ -64,21 +64,21 @@ def create_matrix(sample, sample_row):
     lim_inf = 0 
     lim_sup = 0
     data = []
-    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
-    for i in range(21,294,21):
+    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    for i in range(20,241,20):
         lim_sup = i
-        df = sample.iloc[sample_row:sample_row+1,lim_inf: lim_sup]
+        df = sample.iloc[sample_row:sample_row+1,lim_inf:lim_sup]
         df.columns = cols
         data.append(df)
         lim_inf = lim_sup
-    return pd.concat(data)
+    return pd.concat(data, ignore_index=True)
 
 # Create a image of a matrix (it must be normalized!) 
 def create_image(data):
     fig = plt.figure(figsize = (10,10)) 
     img = fig.add_subplot(111)
     img.imshow(data.values, cmap='viridis')
-    plt.savefig('../images/real_sample_'+str(sample_row)+'.png')
+    plt.savefig('../images/real_sample.png')
 
 def create_db(df, name):
     df = normilize_data(df)
@@ -87,5 +87,5 @@ def create_db(df, name):
         new.to_csv('./'+name+'/sample_'+str(i)+'.csv')
     print('End')
     
-create_db(unlabeled_data, 'unlabeled')
+create_db(labeled_data, 'labeled')
 # sys.exit()
