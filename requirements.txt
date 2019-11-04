@@ -10,6 +10,7 @@ jupyter
 torch
 torchvision
 keras
+pydot
 #rasterio>=1.0a12
 #fiona
 #shapely
