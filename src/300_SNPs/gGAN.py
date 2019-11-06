@@ -6,6 +6,7 @@ from numpy import empty
 from numpy import loadtxt
 from numpy import asarray
 from numpy import append
+from numpy import array_equal
 from numpy.random import randn
 from numpy.random import randint
 from keras.datasets.mnist import load_data
@@ -34,12 +35,35 @@ def custom_activation(output):
     result = logexpsum / (logexpsum + 1.0)
     return result
 
+# for analysis of the tests of the supervised discriminator
+def accuracy_analysis(y, arr):
+    a = []
+    places = []
+    count = 0
+    for x in arr:
+        if(x[0] > x[1]):
+            a.append(0)
+        else:
+            a.append(1)
+    for i in range(0, len(y)):
+        if(y[i] == a[i]):
+            count += 1
+            places.append(i)
+    print( 'correct: ', count)
+    print( 'acc: ', count/len(y))
+    print( 'places: ', places)
+    return a;
+
+# created to make sure the discriminated models had the same wheights
+def same_model(a,b):
+    return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
+
 # define the standalone supervised and unsupervised discriminator models
 def define_discriminator(in_shape=(12,20,1), n_classes=2):
     # image input
-    in_image = Input(shape=in_shape)
+    in_sample = Input(shape=in_shape)
     # downsample
-    fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(in_image)
+    fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(in_sample)
     fe = LeakyReLU(alpha=0.2)(fe)
     # downsample
     fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(fe)
@@ -54,14 +78,14 @@ def define_discriminator(in_shape=(12,20,1), n_classes=2):
     # output layer nodes
     fe = Dense(n_classes)(fe)
     # supervised output
-    c_out_layer = Activation('softmax')(fe)
+    c_out_layer = Activation('sigmoid')(fe)
     # define and compile supervised discriminator model
-    c_model = Model(in_image, c_out_layer)
+    c_model = Model(in_sample, c_out_layer)
     c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
     # unsupervised output
     d_out_layer = Lambda(custom_activation)(fe)
     # define and compile unsupervised discriminator model
-    d_model = Model(in_image, d_out_layer)
+    d_model = Model(in_sample, d_out_layer)
     d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5))
     return d_model, c_model
 
@@ -148,16 +172,20 @@ def load_real_unlabeled_samples():
     return X
 
 # select a supervised subset of the dataset
-def select_supervised_samples(dataset, n_samples=10):
+def select_supervised_samples(dataset, test_data=False, n_samples=5):
     global next_supervised
     X, y = dataset
-    temp = next_supervised + n_samples
-    selected_X = X[next_supervised:temp,:,:,:]
-    selected_y = y[next_supervised:temp]
-    if(temp <= 101):
-        next_supervised = temp
-    else:
-        next_supervised = 0
+    if(test_data):
+        X = X[80:,:,:,:]
+        y = y[80:]
+    else:    
+        temp = next_supervised + n_samples
+        X = X[next_supervised:temp,:,:,:]
+        y = y[next_supervised:temp]
+        if(temp <= 75):
+            next_supervised = temp
+        else:
+            next_supervised = 0
     return [X,y]
 
 # select real samples
@@ -211,8 +239,10 @@ def summarize_performance(step, g_model, c_model, latent_dim, dataset, path, log
     pyplot.savefig(filename1)
     pyplot.close()
     # evaluate the classifier model
-    X, y = dataset
-    _, acc = c_model.evaluate(X, y, verbose=0)
+    X, y = select_supervised_samples(dataset, test_data=True)
+    # _, acc = c_model.evaluate(X, y, verbose=0)
+    loss, acc = c_model.test_on_batch(X, y)
+    print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
     log = log + '\n' + 'Classifier Accuracy: %.3f%%' % (acc * 100)
     filename4 = new_path + 'logs'
     log_file = open(filename4, "w")
