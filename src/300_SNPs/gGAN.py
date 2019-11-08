@@ -1,5 +1,9 @@
 # example of semi-supervised gan for mnist
+import os
+import sys
+from numpy.random import randint
 from numpy import expand_dims
+from numpy import delete
 from numpy import zeros
 from numpy import ones
 from numpy import empty
@@ -26,8 +30,6 @@ from keras.utils.vis_utils import plot_model
 from keras import backend
 from matplotlib import pyplot
 from datetime import datetime
-import os, os.path
-import sys
 
 # custom activation function
 def custom_activation(output):
@@ -133,60 +135,72 @@ def define_gan(g_model, d_model):
     model.compile(loss='binary_crossentropy', optimizer=opt)
     return model
 
-# load the labeled data
-def load_real_labeled_samples():
-    path = './data/labeled'
+def load_from_directory(path):
     cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    len_labeled = len(os.listdir(path))
-    X = loadtxt(open(path+"/sample_0.csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
+    files = os.listdir(path)
+    X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1, usecols=cols)
     # get samples
-    for i in range(1, len_labeled):
-        new = loadtxt(open(path+"/sample_"+str(i)+".csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
+    for i  in range(1, len(files)):
+        new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1, usecols=cols)
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len_labeled,12,20)
-    # get the labels
-    y = loadtxt(open("./data/diag.csv", "rb"), delimiter=",", skiprows=0)
-    # expand dimension 
-    X = expand_dims(X, axis=-1)
-    # convert from ints to floats
-    X = X.astype('float32')
-    return [X, y]
-
-# load the unlabeled data
-def load_real_unlabeled_samples():
-    path = './data/unlabeled'
-    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    len_unlabeled = len(os.listdir(path))
-    X = loadtxt(open(path+"/sample_0.csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
-    # get samples
-    for i in range(1, len_unlabeled):
-        new = loadtxt(open(path+"/sample_"+str(i)+".csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
-        X = append(X, new, axis =0)
-    # reshape the ndarray
-    X = X.reshape(len_unlabeled,12,20)
+    X = X.reshape(len(files),12,20)
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
     X = X.astype('float32')
     return X
 
+# load the labeled data
+def load_real_labeled_samples():
+    X_training_0 = load_from_directory('./data/labeled/training/DF')
+    X_training_1 = load_from_directory('./data/labeled/training/SD')
+    X_test_0 = load_from_directory('./data/labeled/test/DF')
+    X_test_1 = load_from_directory('./data/labeled/test/SD')
+    return [X_training_0, X_training_1, X_test_0, X_test_1]
+
+# load the unlabeled data
+def load_real_unlabeled_samples():
+    return load_from_directory('./data/unlabeled')
+
+# load the unlabeled data
+# def load_real_unlabeled_samples(test=False):
+#     path = './data/unlabeled'
+#     cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+#     len_unlabeled = len(os.listdir(path))
+#     X = loadtxt(open(path+"/sample_0.csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
+#     # get samples
+#     for i in range(1, len_unlabeled):
+#         new = loadtxt(open(path+"/sample_"+str(i)+".csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
+#         X = append(X, new, axis =0)
+#     # reshape the ndarray
+#     X = X.reshape(len_unlabeled,12,20)
+#     # expand dimension 
+#     X = expand_dims(X, axis=-1)
+#     # convert from ints to floats
+#     X = X.astype('float32')
+#     return X
+
 # select a supervised subset of the dataset
-def select_supervised_samples(dataset, test_data=False, n_samples=5):
-    global next_supervised
-    X, y = dataset
+def select_supervised_samples(dataset, test_data=False, n_samples=10):
     if(test_data):
-        X = X[80:,:,:,:]
-        y = y[80:]
-    else:    
-        temp = next_supervised + n_samples
-        X = X[next_supervised:temp,:,:,:]
-        y = y[next_supervised:temp]
-        if(temp <= 75):
-            next_supervised = temp
-        else:
-            next_supervised = 0
-    return [X,y]
+        X_0 = dataset[2]
+        X_1 = dataset[3]
+        y_0 = zeros((len(X_0), 1 ))
+        y_1 = ones((len(X_1), 1 ))
+    else:
+        X_training_0 = dataset[0]
+        X_training_1 = dataset[1]
+        half_samples = int(n_samples/2)
+        ix = randint(0, X_training_0.shape[0], size=half_samples)
+        X_0= X_training_0[ix]
+        ix = randint(0, X_training_1.shape[0], size=half_samples)
+        X_1= X_training_1[ix]
+        y_0 = zeros((half_samples, 1 ))
+        y_1 = ones((half_samples, 1 ))
+    X = append(X_0, X_1, axis=0)
+    y = append(y_0, y_1, axis=0)
+    return [X, y]
 
 # select real samples
 def select_unsupervised_samples(dataset, n_samples=250):
