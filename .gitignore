@@ -3,3 +3,4 @@ src/scRNAseq-WGAN/data/*
 src/scRNAseq-WGAN/models/*
 src/scRNAseq-WGAN/summaries/*
 *.pyc
+src/300_SNPs/run/*

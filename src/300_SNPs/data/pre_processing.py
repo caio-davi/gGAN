@@ -95,21 +95,13 @@ def create_unlabeled_db():
 def create_labeled_db():
     df = normilize_data(labeled_data)
     df = labeled_data
-    test_size = 10
-    test_count = [test_size/2, test_size/2]
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             new = create_matrix(df, i)
-            if(test_count[0]>0):
-                new.to_csv('./labeled/test/DF/sample_'+str(i)+'.csv')
-                test_count[0] -= 1
-            new.to_csv('./labeled/training/DF/sample_'+str(i)+'.csv')
+            new.to_csv('./labeled/DF/sample_'+str(i)+'.csv')
         if(diag[i] == 'SD'):
             new = create_matrix(df, i)
-            if(test_count[1]>0):
-                new.to_csv('./labeled/test/SD/sample_'+str(i)+'.csv')
-                test_count[1] -= 1
-            new.to_csv('./labeled/training/SD/sample_'+str(i)+'.csv')
+            new.to_csv('./labeled/SD/sample_'+str(i)+'.csv')
             
 create_labeled_db()
 # sys.exit()
