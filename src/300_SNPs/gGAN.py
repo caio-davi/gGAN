@@ -163,24 +163,6 @@ def load_real_labeled_samples():
 def load_real_unlabeled_samples():
     return load_from_directory('./data/unlabeled')
 
-# load the unlabeled data
-# def load_real_unlabeled_samples(test=False):
-#     path = './data/unlabeled'
-#     cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-#     len_unlabeled = len(os.listdir(path))
-#     X = loadtxt(open(path+"/sample_0.csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
-#     # get samples
-#     for i in range(1, len_unlabeled):
-#         new = loadtxt(open(path+"/sample_"+str(i)+".csv", "rb"), delimiter=",", skiprows=1, usecols=cols)
-#         X = append(X, new, axis =0)
-#     # reshape the ndarray
-#     X = X.reshape(len_unlabeled,12,20)
-#     # expand dimension 
-#     X = expand_dims(X, axis=-1)
-#     # convert from ints to floats
-#     X = X.astype('float32')
-#     return X
-
 # select a supervised subset of the dataset
 def select_supervised_samples(dataset, test_data=False, n_samples=10):
     if(test_data):
@@ -204,12 +186,10 @@ def select_supervised_samples(dataset, test_data=False, n_samples=10):
 
 # select real samples
 def select_unsupervised_samples(dataset, n_samples=250):
-    # split into images and labels
-    samples = dataset
     # choose random instances
-    ix = randint(0, samples.shape[0], n_samples)
-    # select images and labels
-    X= samples[ix]
+    ix = randint(0, dataset.shape[0], n_samples)
+    # select samples and labels
+    X= dataset[ix]
     # generate class labels
     y = ones((n_samples, 1))
     return [X, y]
@@ -235,40 +215,23 @@ def generate_fake_samples(generator, latent_dim, n_samples):
 # generate samples and save as a plot and save the model
 def summarize_performance(step, g_model, c_model, latent_dim, dataset, path, log, count, n_samples=100):
     # prepare fake examples
-    X, _ = generate_fake_samples(g_model, latent_dim, n_samples)
-    # scale from [-1,1] to [0,1]
-    X = (X + 1) / 2.0
-    # plot images
-    for i in range(100):
-        # define subplot
-        pyplot.subplot(10, 10, 1 + i)
-        # turn off axis
-        pyplot.axis('off')
-        # plot raw pixel data
-        pyplot.imshow(X[i, :, :, 0], cmap='viridis')
-    # save plot to file
-    new_path = path+'/'+str(count)+'/'
-    os.mkdir(new_path)
-    filename1 = new_path + '/generated_plot_%04d.png' % (step+1)
-    pyplot.savefig(filename1)
-    pyplot.close()
+    # X, _ = generate_fake_samples(g_model, latent_dim, n_samples)
     # evaluate the classifier model
     X, y = select_supervised_samples(dataset, test_data=True)
     # _, acc = c_model.evaluate(X, y, verbose=0)
-    loss, acc = c_model.test_on_batch(X, y)
+    loss, acc = c_model.evaluate(X, y, verbose=0)
     print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
-    log = log + '\n' + 'Classifier Accuracy: %.3f%%' % (acc * 100)
-    filename4 = new_path + 'logs'
-    log_file = open(filename4, "w")
-    log_file.write(log)
-    log_file.close()
+    acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
+    new_path = path+'/'+str(count)+'/'
+    os.mkdir(new_path)
     # save the generator model
-    filename2 = new_path + 'g_model_%04d.h5' % (step+1)
-    g_model.save(filename2)
+    filename1 = new_path + 'g_model_%04d.h5' % (step+1)
+    g_model.save(filename1)
     # save the classifier model
-    filename3 = new_path + 'c_model_%04d.h5' % (step+1)
-    c_model.save(filename3)
-    print('>Saved: %s, %s, and %s' % (filename1, filename2, filename3))
+    filename2 = new_path + 'c_model_%04d.h5' % (step+1)
+    c_model.save(filename2)
+    print('>Saved: %s and %s' % (filename1, filename2))
+    return acc_log
 
 # train the generator and discriminator
 def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_dataset, latent_dim, n_epochs=10, n_batch=100):
@@ -284,7 +247,9 @@ def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_datas
     # calculate the size of half a batch of samples
     half_batch = int(n_batch / 2)
     print('n_epochs=%d, n_batch=%d, 1/2=%d, b/e=%d, steps=%d \n' % (n_epochs, n_batch, half_batch, bat_per_epo, n_steps))
-    full_log = 'n_epochs=%d, n_batch=%d, 1/2=%d, b/e=%d, steps=%d \n' % (n_epochs, n_batch, half_batch, bat_per_epo, n_steps)
+    full_log = 'Training settings: \n'
+    full_log = full_log + 'training_size=%d , test_size=%d \n' %(labeled_dataset[0].shape[0]+labeled_dataset[1].shape[0], labeled_dataset[2].shape[0]+labeled_dataset[3].shape[0])
+    full_log = full_log + 'n_epochs=%d, n_batch=%d, 1/2=%d, b/e=%d, steps=%d \n' % (n_epochs, n_batch, half_batch, bat_per_epo, n_steps)
     full_log = full_log + '\n\n'
     count = 0
     # manually enumerate epochs
@@ -305,9 +270,9 @@ def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_datas
         full_log = full_log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i+1) % (bat_per_epo * 1) == 0:
-            summarize_performance(i, g_model, c_model, latent_dim, labeled_dataset, path, log, count)
+            sr = summarize_performance(i, g_model, c_model, latent_dim, labeled_dataset, path, log, count)
             count += 1
-            log = ''
+            full_log = full_log + sr
     filename = path + 'full_training_log'
     log_file = open(filename, "w")
     log_file.write(full_log)

@@ -94,7 +94,6 @@ def create_unlabeled_db():
     
 def create_labeled_db():
     df = normilize_data(labeled_data)
-    df = labeled_data
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             new = create_matrix(df, i)
@@ -102,6 +101,27 @@ def create_labeled_db():
         if(diag[i] == 'SD'):
             new = create_matrix(df, i)
             new.to_csv('./labeled/SD/sample_'+str(i)+'.csv')
+
+def create_splited_labeled_db(test_size=0.25):
+    df = normilize_data(labeled_data)
+    half_test_size = int((len(df.index)*test_size/2))
+    test_count = [half_test_size, half_test_size]
+    for i in range(0,len(df.index)):
+        if(diag[i] == 'DF'):
+            new = create_matrix(df, i)
+            if(test_count[0]>0):
+                new.to_csv('./labeled/test/DF/sample_'+str(i)+'.csv')
+                test_count[0] -= 1
+            else:
+                new.to_csv('./labeled/training/DF/sample_'+str(i)+'.csv')
+        if(diag[i] == 'SD'):
+            new = create_matrix(df, i)
+            if(test_count[1]>0):
+                new.to_csv('./labeled/test/SD/sample_'+str(i)+'.csv')
+                test_count[1] -= 1
+            else:
+                new.to_csv('./labeled/training/SD/sample_'+str(i)+'.csv')
             
-create_labeled_db()
+                        
+create_splited_labeled_db()
 # sys.exit()
