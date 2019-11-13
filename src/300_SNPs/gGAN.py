@@ -1,6 +1,7 @@
 # example of semi-supervised gan for mnist
 import os
 import sys
+import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
 from numpy import delete
@@ -80,7 +81,7 @@ def define_discriminator(in_shape=(12,20,1), n_classes=2):
     # output layer nodes
     fe = Dense(n_classes)(fe)
     # supervised output
-    c_out_layer = Activation('sigmoid')(fe)
+    c_out_layer = Activation('softmax')(fe)
     # define and compile supervised discriminator model
     c_model = Model(in_sample, c_out_layer)
     c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
@@ -152,17 +153,44 @@ def load_from_directory(path):
     return X
 
 # load the labeled data
+# def load_real_labeled_samples():
+#     X_training_0 = load_from_directory('./data/labeled/training/DF')
+#     X_training_1 = load_from_directory('./data/labeled/training/SD')
+#     X_test_0 = load_from_directory('./data/labeled/test/DF')
+#     X_test_1 = load_from_directory('./data/labeled/test/SD')
+#     return [X_training_0, X_training_1, X_test_0, X_test_1]
+
+# load the labeled data
 def load_real_labeled_samples():
-    X_training_0 = load_from_directory('./data/labeled/training/DF')
-    X_training_1 = load_from_directory('./data/labeled/training/SD')
-    X_test_0 = load_from_directory('./data/labeled/test/DF')
-    X_test_1 = load_from_directory('./data/labeled/test/SD')
-    return [X_training_0, X_training_1, X_test_0, X_test_1]
+    X_0 = load_from_directory('./data/labeled/DF')
+    X_1 = load_from_directory('./data/labeled/SD')
+    return [X_0, X_1]
 
 # load the unlabeled data
 def load_real_unlabeled_samples():
     return load_from_directory('./data/unlabeled')
 
+# Simply randomly split an array in two
+def split_test_data(data, test_size):
+    mask = np.zeros(data.shape[0],dtype=bool)
+    ix = randint(0, data.shape[0], size=test_size)
+    mask[ix] = True
+    X_training = data[~mask]
+    X_test = data[mask]
+    return X_training , X_test
+
+# Generates Training and Test data. The test dataset is always balanced.
+def generate_supervised_datasets(X_0, X_1, relative_test_size=0.2):
+    total_size = len(X_0) + len(X_1)
+    half_test_size = int((total_size * relative_test_size) / 2 )
+    X_training_0, X_test_0 = split_test_data(X_0, half_test_size)
+    X_training_1, X_test_1 = split_test_data(X_1, half_test_size)
+    X_training = append(X_training_0, X_training_1, axis=0)
+    y_training = append(zeros((len(X_training_0), 1 )), ones((len(X_training_1), 1 )), axis=0)
+    X_test = append(X_test_0, X_test_1, axis=0)
+    y_test = append(zeros((half_test_size, 1 )), ones((half_test_size, 1 )), axis=0)
+    return [X_training , y_training] , [X_test , y_test]
+    
 # select a supervised subset of the dataset
 def select_supervised_samples(dataset, test_data=False, n_samples=10):
     if(test_data):
@@ -183,6 +211,22 @@ def select_supervised_samples(dataset, test_data=False, n_samples=10):
     X = append(X_0, X_1, axis=0)
     y = append(y_0, y_1, axis=0)
     return [X, y]
+
+def select_supervised_samples2(dataset, n_samples=10):
+    ix = randint(0, X_training_0.shape[0], size=half_samples)
+    
+        X_training_0 = dataset[0]
+        X_training_1 = dataset[1]
+        half_samples = int(n_samples/2)
+        X_0= X_training_0[ix]
+        ix = randint(0, X_training_1.shape[0], size=half_samples)
+        X_1= X_training_1[ix]
+        y_0 = zeros((half_samples, 1 ))
+        y_1 = ones((half_samples, 1 ))
+    X = append(X_0, X_1, axis=0)
+    y = append(y_0, y_1, axis=0)
+    return [X, y]
+
 
 # select real samples
 def select_unsupervised_samples(dataset, n_samples=250):
@@ -234,7 +278,7 @@ def summarize_performance(step, g_model, c_model, latent_dim, dataset, path, log
     return acc_log
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_dataset, latent_dim, n_epochs=10, n_batch=100):
+def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_dataset, latent_dim, n_epochs=100, n_batch=100):
     # log summary
     log = ''
     # path to save logs, performances and fake samples files

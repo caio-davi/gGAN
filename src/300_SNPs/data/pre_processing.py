@@ -3,6 +3,7 @@ import sys
 from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
+import os, shutil
 
 # Importing data and removing unnecessary headers
 
@@ -102,7 +103,8 @@ def create_labeled_db():
             new = create_matrix(df, i)
             new.to_csv('./labeled/SD/sample_'+str(i)+'.csv')
 
-def create_splited_labeled_db(test_size=0.25):
+def create_splited_labeled_db(test_size=0.15):
+    clear_folders()
     df = normilize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
     test_count = [half_test_size, half_test_size]
@@ -122,6 +124,18 @@ def create_splited_labeled_db(test_size=0.25):
             else:
                 new.to_csv('./labeled/training/SD/sample_'+str(i)+'.csv')
             
-                        
+def clear_folders():
+    folders = ['./labeled/test/DF','./labeled/training/DF', './labeled/test/SD', './labeled/training/SD' ] 
+    for folder in folders:
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                print(e)
+        
+                              
 create_splited_labeled_db()
 # sys.exit()
