@@ -38,25 +38,6 @@ def custom_activation(output):
     result = logexpsum / (logexpsum + 1.0)
     return result
 
-# for analysis of the tests of the supervised discriminator
-def accuracy_analysis(y, arr):
-    a = []
-    places = []
-    count = 0
-    for x in arr:
-        if(x[0] > x[1]):
-            a.append(0)
-        else:
-            a.append(1)
-    for i in range(0, len(y)):
-        if(y[i] == a[i]):
-            count += 1
-            places.append(i)
-    print( 'correct: ', count)
-    print( 'acc: ', count/len(y))
-    print( 'places: ', places)
-    return a;
-
 # created to make sure the discriminated models had the same wheights
 def same_model(a,b):
     return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
@@ -171,6 +152,7 @@ def load_real_unlabeled_samples():
     return load_from_directory('./data/unlabeled')
 
 # Simply randomly split an array in two
+# There is a bug here and the test is not 100% garanted balanced, but for now it is close enough
 def split_test_data(data, test_size):
     mask = np.zeros(data.shape[0],dtype=bool)
     ix = randint(0, data.shape[0], size=test_size)
@@ -180,53 +162,28 @@ def split_test_data(data, test_size):
     return X_training , X_test
 
 # Generates Training and Test data. The test dataset is always balanced.
-def generate_supervised_datasets(X_0, X_1, relative_test_size=0.2):
-    total_size = len(X_0) + len(X_1)
+def generate_supervised_datasets(X, relative_test_size=0.2):
+    total_size = len(X[0]) + len(X[1])
     half_test_size = int((total_size * relative_test_size) / 2 )
-    X_training_0, X_test_0 = split_test_data(X_0, half_test_size)
-    X_training_1, X_test_1 = split_test_data(X_1, half_test_size)
+    X_training_0, X_test_0 = split_test_data(X[0], half_test_size)
+    X_training_1, X_test_1 = split_test_data(X[1], half_test_size)
     X_training = append(X_training_0, X_training_1, axis=0)
     y_training = append(zeros((len(X_training_0), 1 )), ones((len(X_training_1), 1 )), axis=0)
     X_test = append(X_test_0, X_test_1, axis=0)
-    y_test = append(zeros((half_test_size, 1 )), ones((half_test_size, 1 )), axis=0)
+    y_test = append(zeros((len(X_test_0), 1 )), ones((len(X_test_1), 1 )), axis=0)
     return [X_training , y_training] , [X_test , y_test]
-    
-# select a supervised subset of the dataset
-def select_supervised_samples(dataset, test_data=False, n_samples=10):
-    if(test_data):
-        X_0 = dataset[2]
-        X_1 = dataset[3]
-        y_0 = zeros((len(X_0), 1 ))
-        y_1 = ones((len(X_1), 1 ))
-    else:
-        X_training_0 = dataset[0]
-        X_training_1 = dataset[1]
-        half_samples = int(n_samples/2)
-        ix = randint(0, X_training_0.shape[0], size=half_samples)
-        X_0= X_training_0[ix]
-        ix = randint(0, X_training_1.shape[0], size=half_samples)
-        X_1= X_training_1[ix]
-        y_0 = zeros((half_samples, 1 ))
-        y_1 = ones((half_samples, 1 ))
-    X = append(X_0, X_1, axis=0)
-    y = append(y_0, y_1, axis=0)
-    return [X, y]
 
-def select_supervised_samples2(dataset, n_samples=10):
-    ix = randint(0, X_training_0.shape[0], size=half_samples)
-    
-        X_training_0 = dataset[0]
-        X_training_1 = dataset[1]
-        half_samples = int(n_samples/2)
-        X_0= X_training_0[ix]
-        ix = randint(0, X_training_1.shape[0], size=half_samples)
-        X_1= X_training_1[ix]
-        y_0 = zeros((half_samples, 1 ))
-        y_1 = ones((half_samples, 1 ))
-    X = append(X_0, X_1, axis=0)
-    y = append(y_0, y_1, axis=0)
+def select_supervised_samples(dataset, n_samples=10):
+    half_samples = int(n_samples/2)
+    mask = np.array(dataset[1], dtype=bool)
+    mask = np.reshape(mask,(dataset[0].shape[0]))
+    X_0 = dataset[0][mask]
+    X_1 = dataset[0][~mask]
+    ix_0 = randint(0, X_0.shape[0], half_samples)
+    ix_1 = randint(0, X_1.shape[0], half_samples)
+    X = append(X_0[ix_0], X_1[ix_1], axis=0)
+    y = append(zeros((half_samples, 1 )), ones((half_samples, 1 )), axis=0)
     return [X, y]
-
 
 # select real samples
 def select_unsupervised_samples(dataset, n_samples=250):
@@ -257,49 +214,36 @@ def generate_fake_samples(generator, latent_dim, n_samples):
     return images, y
 
 # generate samples and save as a plot and save the model
-def summarize_performance(step, g_model, c_model, latent_dim, dataset, path, log, count, n_samples=100):
-    # prepare fake examples
-    # X, _ = generate_fake_samples(g_model, latent_dim, n_samples)
-    # evaluate the classifier model
-    X, y = select_supervised_samples(dataset, test_data=True)
-    # _, acc = c_model.evaluate(X, y, verbose=0)
+def summarize_performance(step, g_model, c_model, latent_dim, test_dataset, path, log, count, save_performance=False, n_samples=100):
+    X, y = test_dataset
     loss, acc = c_model.evaluate(X, y, verbose=0)
-    print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
-    acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
-    new_path = path+'/'+str(count)+'/'
-    os.mkdir(new_path)
-    # save the generator model
-    filename1 = new_path + 'g_model_%04d.h5' % (step+1)
-    g_model.save(filename1)
-    # save the classifier model
-    filename2 = new_path + 'c_model_%04d.h5' % (step+1)
-    c_model.save(filename2)
-    print('>Saved: %s and %s' % (filename1, filename2))
-    return acc_log
+    if(save_performance):
+        print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
+        # acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
+        new_path = path+'/'+'partial_'+str(count)+'/'
+        os.mkdir(new_path)
+        # save the generator model
+        filename1 = new_path + 'g_model_%04d.h5' % (step+1)
+        g_model.save(filename1)
+        # save the classifier model
+        filename2 = new_path + 'c_model_%04d.h5' % (step+1)
+        c_model.save(filename2)
+        print('>Saved: %s and %s' % (filename1, filename2))
+    return loss, acc
+
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_dataset, latent_dim, n_epochs=100, n_batch=100):
-    # log summary
-    log = ''
-    # path to save logs, performances and fake samples files
-    path = './run/'+datetime.now().isoformat()+'/'
-    os.mkdir(path)
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
     n_steps = bat_per_epo * n_epochs
     # calculate the size of half a batch of samples
     half_batch = int(n_batch / 2)
-    print('n_epochs=%d, n_batch=%d, 1/2=%d, b/e=%d, steps=%d \n' % (n_epochs, n_batch, half_batch, bat_per_epo, n_steps))
-    full_log = 'Training settings: \n'
-    full_log = full_log + 'training_size=%d , test_size=%d \n' %(labeled_dataset[0].shape[0]+labeled_dataset[1].shape[0], labeled_dataset[2].shape[0]+labeled_dataset[3].shape[0])
-    full_log = full_log + 'n_epochs=%d, n_batch=%d, 1/2=%d, b/e=%d, steps=%d \n' % (n_epochs, n_batch, half_batch, bat_per_epo, n_steps)
-    full_log = full_log + '\n\n'
-    count = 0
-    # manually enumerate epochs
+    log = ''
     for i in range(n_steps):
         # update supervised discriminator (c)
-        [Xsup_real, ysup_real] = select_supervised_samples(labeled_dataset)
+        [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
         # update unsupervised discriminator (d)
         [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset)
@@ -310,31 +254,43 @@ def train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_datas
         X_gan, y_gan = generate_latent_points(latent_dim, n_batch), ones((n_batch, 1))
         g_loss = gan_model.train_on_batch(X_gan, y_gan)
         # summarize loss on this batch
-        log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
-        full_log = full_log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
+        # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i+1) % (bat_per_epo * 1) == 0:
-            sr = summarize_performance(i, g_model, c_model, latent_dim, labeled_dataset, path, log, count)
-            count += 1
-            full_log = full_log + sr
-    filename = path + 'full_training_log'
-    log_file = open(filename, "w")
-    log_file.write(full_log)
+            loss, acc = summarize_performance(i, g_model, c_model, latent_dim, labeled_test_dataset, path, log, i+1)
+            log = log + str(n_instance+1)+','+str(i+1)+','+str(loss)+','+str(acc)+'\n'
+    return log
+
+def batch_train(n_models = 10):
+    # path to save logs, performances and fake samples files
+    path = './run/'
+    # log summary
+    log = ''
+    log = log + 'instance,step,loss,acc\n'
+    for i in range(n_models):
+        # size of the latent space
+        latent_dim = 100
+        # create the discriminator models
+        d_model, c_model = define_discriminator()
+        # create the generator
+        g_model = define_generator(latent_dim)
+        # create the gan
+        gan_model = define_gan(g_model, d_model)
+        # load labeled data
+        labeled_dataset = load_real_labeled_samples()
+        # generate train and test datasets
+        labeled_train_dataset, labeled_test_dataset = generate_supervised_datasets(labeled_dataset)
+        # load unlabeled data
+        unlabeled_dataset = load_real_unlabeled_samples()
+        # relative size of the test data
+        test_size = 0.2
+        # train model
+        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, i)
+        # uptade the log
+        log = log + train_log
+    log_name = path + 'test_'+datetime.now().isoformat()+'.log'
+    log_file = open(log_name, "w")
+    log_file.write(log)
     log_file.close()
- 
-# size of the latent space
-latent_dim = 100
-# create the discriminator models
-d_model, c_model = define_discriminator()
-# create the generator
-g_model = define_generator(latent_dim)
-# create the gan
-gan_model = define_gan(g_model, d_model)
-# load labeled data
-labeled_dataset = load_real_labeled_samples()
-# load unlabeled data
-unlabeled_dataset = load_real_unlabeled_samples()
-# set pointer to the labeled data
-next_supervised = 0
-# train model
-train(g_model, d_model, c_model, gan_model, labeled_dataset, unlabeled_dataset, latent_dim)
+
+batch_train()
