@@ -19,19 +19,40 @@ def get_frequencies(data):
     frequencies = []
     for snp in data.columns:
         snp_values = data[snp].value_counts()
+        snp_values = snp_values / snp_values.sum()
         frequencies.append(snp_values)
     return frequencies
 
-def compare_frequencies(dataset_A, dataset_B):
+def get_allele_frequency(allele, snp_frequencies):
+    for i in range(len(snp_frequencies)):
+        if snp_frequencies.index[i] == allele:
+            return snp_frequencies[i]
+
+def compare_frequencies(freq_A, freq_B):
+    maxDiff = 0
+    shared = list(set(freq_A.index) & set(freq_B.index))
+    for allele in shared:
+        diff = abs(get_allele_frequency(allele, freq_A) - get_allele_frequency(allele, freq_B))
+        if (diff>maxDiff):
+            maxDiff = diff
+    return maxDiff
+    
+def compare_all_frequencies(dataset_A, dataset_B):
     # get the frequencies counts
     freq_A = get_frequencies(dataset_A)
     freq_B = get_frequencies(dataset_B)
+    diffs = []
     for i in range(len(dataset_A.columns)):
         # make sure we are comparing the same SNPs
         if(freq_A[i].name == freq_B[i].name):
-            return None
+            diffs.append(compare_frequencies(freq_A[i], freq_B[i]))
+        else:
+            raise IndexError('Index error.')
+    return diffs 
 
+# def cut_less_than(data, threshold)
 
 labeled_data , unlabeled_data = import_data()
-compare_frequencies(labeled_data, unlabeled_data)
-      
+diff_freq = compare_all_frequencies(labeled_data, unlabeled_data)
+print(diff_freq)  
+diff_freq = pd.Series(diff_freq, index=labeled_data.columns)
