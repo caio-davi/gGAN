@@ -31,6 +31,8 @@ def get_allele_frequency(allele, snp_frequencies):
 def compare_frequencies(freq_A, freq_B):
     maxDiff = 0
     shared = list(set(freq_A.index) & set(freq_B.index))
+    if(len(shared) == 0):
+        return 1
     for allele in shared:
         diff = abs(get_allele_frequency(allele, freq_A) - get_allele_frequency(allele, freq_B))
         if (diff>maxDiff):
@@ -50,9 +52,19 @@ def compare_all_frequencies(dataset_A, dataset_B):
             raise IndexError('Index error.')
     return diffs 
 
-# def cut_less_than(data, threshold)
+def create_mask(diff_freq, threshold):
+    mask = []
+    for i in range(len(diff_freq)):
+        if (diff_freq[i] < threshold):
+            mask.append(diff_freq.index[i])
+    return pd.Series(mask)
 
+
+MAX_DIFF = 0.1
 labeled_data , unlabeled_data = import_data()
 diff_freq = compare_all_frequencies(labeled_data, unlabeled_data)
-print(diff_freq)  
 diff_freq = pd.Series(diff_freq, index=labeled_data.columns)
+mask = create_mask(diff_freq, MAX_DIFF)
+mask.to_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv')
+print(mask)
+print(len(mask))
