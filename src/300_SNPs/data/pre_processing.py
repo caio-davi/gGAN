@@ -106,7 +106,7 @@ def create_image(data):
 def create_unlabeled_db():
     df = normilize_data(unlabeled_data)
     for i in range(0,len(df.index)):
-        new = create_matrix(df, i)
+        new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv')
     print('End')
     
@@ -158,6 +158,8 @@ MAX_DIFF = 0.1
 mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
 
 labeled_data = labeled_data[mask[1].tolist()]
+unlabeled_data = unlabeled_data[mask[1].tolist()]
 
 create_labeled_db()
+create_unlabeled_db()
 # sys.exit()
