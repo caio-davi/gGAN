@@ -18,6 +18,7 @@ unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', '
 
 labeled_data = labeled_data[unlabeled_data.columns]
 
+
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
     names = []
@@ -64,19 +65,35 @@ def normilize_data(dataFrame):
     x_scaled = min_max_scaler.fit_transform(x)
     return pd.DataFrame(x_scaled)
 
+# Dummy way to get the 2 biggest factors of a number. Just work for n>1
+def get_factors(number):
+    x1 = 0 
+    for i in range(1, number):
+        if number % i == 0:
+            x1 = i
+    x2 = number / x1
+    return x1 , int(x2)
+
+def list_to(number):
+    l = []
+    for i in range(1, number+1):
+        l.append(i)
+    return l
+
 # Create a matrix of one sample of the dataset. 
-def create_matrix(sample, sample_row):
-    lim_inf = 0 
+def create_matrix(sample):
+    x1, x2 = get_factors(len(sample))
+    lim_inf = 0
     lim_sup = 0
-    data = []
-    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    for i in range(20,241,20):
+    cols = list_to(x1)
+    df = pd.DataFrame(columns=cols)
+    for i in range(x2,len(sample)+1,x2):
         lim_sup = i
-        df = sample.iloc[sample_row:sample_row+1,lim_inf:lim_sup]
-        df.columns = cols
-        data.append(df)
+        s = sample.iloc[lim_inf:lim_sup]
+        s.index = cols
+        df = df.append(s)
         lim_inf = lim_sup
-    return pd.concat(data, ignore_index=True)
+    return df
 
 # Create a image of a matrix (it must be normalized!) 
 def create_image(data):
@@ -97,11 +114,11 @@ def create_labeled_db():
     df = normilize_data(labeled_data)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
-            new = create_matrix(df, i)
-            new.to_csv('./labeled/DF/sample_'+str(i)+'.csv')
+            new = create_matrix(df.loc[i,])
+            new.to_csv('./labeled/DF/sample_'+str(i)+'.csv', index=False)
         if(diag[i] == 'SD'):
-            new = create_matrix(df, i)
-            new.to_csv('./labeled/SD/sample_'+str(i)+'.csv')
+            new = create_matrix(df.loc[i,])
+            new.to_csv('./labeled/SD/sample_'+str(i)+'.csv', index=False)
 
 def create_splited_labeled_db(test_size=0.15):
     clear_folders()
@@ -110,14 +127,14 @@ def create_splited_labeled_db(test_size=0.15):
     test_count = [half_test_size, half_test_size]
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
-            new = create_matrix(df, i)
+            new = create_matrix(df.loc[i,])
             if(test_count[0]>0):
                 new.to_csv('./labeled/test/DF/sample_'+str(i)+'.csv')
                 test_count[0] -= 1
             else:
                 new.to_csv('./labeled/training/DF/sample_'+str(i)+'.csv')
         if(diag[i] == 'SD'):
-            new = create_matrix(df, i)
+            new = create_matrix(df.loc[i,])
             if(test_count[1]>0):
                 new.to_csv('./labeled/test/SD/sample_'+str(i)+'.csv')
                 test_count[1] -= 1
@@ -136,6 +153,11 @@ def clear_folders():
             except Exception as e:
                 print(e)
         
-                              
-create_splited_labeled_db()
+
+MAX_DIFF = 0.1
+mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
+
+labeled_data = labeled_data[mask[1].tolist()]
+
+create_labeled_db()
 # sys.exit()

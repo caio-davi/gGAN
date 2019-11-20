@@ -118,12 +118,11 @@ def define_gan(g_model, d_model):
     return model
 
 def load_from_directory(path):
-    cols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     files = os.listdir(path)
-    X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1, usecols=cols)
+    X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
     # get samples
     for i  in range(1, len(files)):
-        new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1, usecols=cols)
+        new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
         X = append(X, new, axis =0)
     # reshape the ndarray
     X = X.reshape(len(files),12,20)
