@@ -43,7 +43,7 @@ def same_model(a,b):
     return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
 
 # define the standalone supervised and unsupervised discriminator models
-def define_discriminator(in_shape=(12,20,1), n_classes=2):
+def define_discriminator(in_shape=(5,5,1), n_classes=2):
     # image input
     in_sample = Input(shape=in_shape)
     # downsample
@@ -75,33 +75,39 @@ def define_discriminator(in_shape=(12,20,1), n_classes=2):
 
 ##### plot the Discriminator
 # d_model, c_model = define_discriminator()
-# plot_model(c_model, to_file='discriminator1_plot.png', show_shapes=True, show_layer_names=True)
-# plot_model(d_model, to_file='discriminator2_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(c_model, to_file='discriminator1_5x5_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(d_model, to_file='discriminator2_5x5_plot.png', show_shapes=True, show_layer_names=True)
 
 # define the standalone generator model
 def define_generator(latent_dim):
     # image generator input
     in_lat = Input(shape=(latent_dim,))
-    # foundation for 7x7 image
-    n_nodes = 128 * 3 * 5
+    # foundation for 5x5 image
+    n_nodes = 128 * 1 * 1
     gen = Dense(n_nodes)(in_lat)
     gen = LeakyReLU(alpha=0.2)(gen)
-    gen = Reshape((3, 5, 128))(gen)
-    # upsample to 14x14
-    gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
+    gen = Reshape((1, 1, 128))(gen)
+    # upsample to 2x2
+    gen = Conv2DTranspose(128, (2,2), strides=(2,2), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
-    # upsample to 28x28
-    gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
+    # upsample to 4x4
+    gen = Conv2DTranspose(128, (2,2), strides=(2,2), padding='same')(gen)
+    gen = LeakyReLU(alpha=0.2)(gen)
+    # upsample to 20x20
+    gen = Conv2DTranspose(128, (2,2), strides=(5,5), padding='same')(gen)
+    gen = LeakyReLU(alpha=0.2)(gen)
+    # downsample to 5x5
+    gen = Conv2D(128, (2,2), strides=(4,4), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
     # output
-    out_layer = Conv2D(1, (7,7), activation='tanh', padding='same')(gen)
+    out_layer = Conv2D(1, (8,8), activation='tanh', padding='same')(gen)
     # define model
     model = Model(in_lat, out_layer)
     return model
 
 ##### plot the Generator
 # g_model = define_generator(100)
-# plot_model(g_model, to_file='generator_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(g_model, to_file='generator_plot_5x5.png', show_shapes=True, show_layer_names=True)
 # sys.exit()
 
 # define the combined generator and discriminator model, for updating the generator
@@ -120,12 +126,13 @@ def define_gan(g_model, d_model):
 def load_from_directory(path):
     files = os.listdir(path)
     X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
+    shape = X.shape
     # get samples
     for i  in range(1, len(files)):
         new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len(files),12,20)
+    X = X.reshape(len(files),shape[0], shape[1])
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
