@@ -126,12 +126,13 @@ def define_gan(g_model, d_model):
 def load_from_directory(path):
     files = os.listdir(path)
     X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
+    shape = X.shape
     # get samples
     for i  in range(1, len(files)):
         new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len(files),5,5)
+    X = X.reshape(len(files),shape[0], shape[1])
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
@@ -266,7 +267,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(loss)+','+str(acc)+'\n'
     return log
 
-def batch_train(n_models = 10):
+def batch_train(labeled_dataset, unlabeled_dataset, n_models = 10):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
@@ -281,12 +282,8 @@ def batch_train(n_models = 10):
         g_model = define_generator(latent_dim)
         # create the gan
         gan_model = define_gan(g_model, d_model)
-        # load labeled data
-        labeled_dataset = load_real_labeled_samples()
         # generate train and test datasets
         labeled_train_dataset, labeled_test_dataset = generate_supervised_datasets(labeled_dataset)
-        # load unlabeled data
-        unlabeled_dataset = load_real_unlabeled_samples()
         # relative size of the test data
         test_size = 0.2
         # train model
@@ -298,4 +295,9 @@ def batch_train(n_models = 10):
     log_file.write(log)
     log_file.close()
 
-batch_train()
+
+# load  data
+labeled_dataset = load_real_labeled_samples()
+unlabeled_dataset = load_real_unlabeled_samples()
+
+batch_train(labeled_dataset,unlabeled_dataset)

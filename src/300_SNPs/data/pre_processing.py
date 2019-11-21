@@ -107,7 +107,7 @@ def create_unlabeled_db():
     df = normilize_data(unlabeled_data)
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
-        new.to_csv('./unlabeled/sample_'+str(i)+'.csv')
+        new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     print('End')
     
 def create_labeled_db():
