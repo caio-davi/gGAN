@@ -160,6 +160,14 @@ mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, hea
 labeled_data = labeled_data[mask[1].tolist()]
 unlabeled_data = unlabeled_data[mask[1].tolist()]
 
+os.makedirs('labeled/training/SD', exist_ok=True)
+os.makedirs('labeled/training/DF', exist_ok=True)
+os.makedirs('labeled/test/SD', exist_ok=True)
+os.makedirs('labeled/test/DF', exist_ok=True)
+os.makedirs('labeled/DF', exist_ok=True)
+os.makedirs('labeled/SD', exist_ok=True)
+os.makedirs('unlabeled', exist_ok=True)
+
 create_labeled_db()
 create_unlabeled_db()
 # sys.exit()
