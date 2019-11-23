@@ -75,8 +75,8 @@ def define_discriminator(in_shape=(5,5,1), n_classes=2):
 
 ##### plot the Discriminator
 # d_model, c_model = define_discriminator()
-# plot_model(c_model, to_file='discriminator1_5x5_plot.png', show_shapes=True, show_layer_names=True)
-# plot_model(d_model, to_file='discriminator2_5x5_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(c_model, to_file='./images/discriminator1_5x5_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(d_model, to_file='./images/discriminator2_5x5_plot.png', show_shapes=True, show_layer_names=True)
 
 # define the standalone generator model
 def define_generator(latent_dim):
@@ -107,7 +107,7 @@ def define_generator(latent_dim):
 
 ##### plot the Generator
 # g_model = define_generator(100)
-# plot_model(g_model, to_file='generator_plot_5x5.png', show_shapes=True, show_layer_names=True)
+# plot_model(g_model, to_file='./images/generator_plot_5x5.png', show_shapes=True, show_layer_names=True)
 # sys.exit()
 
 # define the combined generator and discriminator model, for updating the generator

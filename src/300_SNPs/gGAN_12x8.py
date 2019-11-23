@@ -1,7 +1,7 @@
 # example of semi-supervised gan for mnist
 import os
-import sys
 import numpy as np
+from sys import exit
 from numpy.random import randint
 from numpy import expand_dims
 from numpy import delete
@@ -43,7 +43,7 @@ def same_model(a,b):
     return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
 
 # define the standalone supervised and unsupervised discriminator models
-def define_discriminator(in_shape=(12,20,1), n_classes=2):
+def define_discriminator(in_shape=(12,8,1), n_classes=2):
     # image input
     in_sample = Input(shape=in_shape)
     # downsample
@@ -74,23 +74,23 @@ def define_discriminator(in_shape=(12,20,1), n_classes=2):
     return d_model, c_model
 
 ##### plot the Discriminator
-# d_model, c_model = define_discriminator()
-# plot_model(c_model, to_file='./images/discriminator1_plot.png', show_shapes=True, show_layer_names=True)
-# plot_model(d_model, to_file='./images/discriminator2_plot.png', show_shapes=True, show_layer_names=True)
+d_model, c_model = define_discriminator()
+# plot_model(c_model, to_file='./images/discriminator1_12x8_plot.png', show_shapes=True, show_layer_names=True)
+# plot_model(d_model, to_file='./images/discriminator2_12x8_plot.png', show_shapes=True, show_layer_names=True)
 
 # define the standalone generator model
 def define_generator(latent_dim):
     # image generator input
     in_lat = Input(shape=(latent_dim,))
-    # foundation for 3x5 sample 
-    n_nodes = 128 * 3 * 5
+    # foundation for 3x2 sample 
+    n_nodes = 128 * 3 * 2
     gen = Dense(n_nodes)(in_lat)
     gen = LeakyReLU(alpha=0.2)(gen)
-    gen = Reshape((3, 5, 128))(gen)
-    # upsample to 6x10
+    gen = Reshape((3, 2, 128))(gen)
+    # upsample to 6x4
     gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
-    # upsample to 12x20
+    # upsample to 12x8
     gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
     # output
@@ -101,8 +101,8 @@ def define_generator(latent_dim):
 
 ##### plot the Generator
 # g_model = define_generator(100)
-# plot_model(g_model, to_file='./images/generator_plot.png', show_shapes=True, show_layer_names=True)
-# sys.exit()
+# plot_model(g_model, to_file='./images/generator_plot_12x8.png', show_shapes=True, show_layer_names=True)
+# exit()
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -120,12 +120,13 @@ def define_gan(g_model, d_model):
 def load_from_directory(path):
     files = os.listdir(path)
     X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
+    shape = X.shape
     # get samples
     for i  in range(1, len(files)):
         new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len(files),12,20)
+    X = X.reshape(len(files),shape[0], shape[1])
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
