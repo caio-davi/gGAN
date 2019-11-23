@@ -134,14 +134,6 @@ def load_from_directory(path):
     return X
 
 # load the labeled data
-# def load_real_labeled_samples():
-#     X_training_0 = load_from_directory('./data/labeled/training/DF')
-#     X_training_1 = load_from_directory('./data/labeled/training/SD')
-#     X_test_0 = load_from_directory('./data/labeled/test/DF')
-#     X_test_1 = load_from_directory('./data/labeled/test/SD')
-#     return [X_training_0, X_training_1, X_test_0, X_test_1]
-
-# load the labeled data
 def load_real_labeled_samples():
     X_0 = load_from_directory('./data/labeled/DF')
     X_1 = load_from_directory('./data/labeled/SD')
@@ -233,7 +225,7 @@ def summarize_performance(step, g_model, c_model, latent_dim, test_dataset, path
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=10):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -261,7 +253,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(loss)+','+str(acc)+'\n'
     return log
 
-def batch_train(labeled_dataset, unlabeled_dataset, n_models = 10):
+def batch_train(labeled_dataset, unlabeled_dataset, n_models = 1):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
