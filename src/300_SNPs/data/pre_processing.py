@@ -1,9 +1,9 @@
 import pandas as pd
-import sys
 from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import os, shutil
+from sys import exit 
 
 # Importing data and removing unnecessary headers
 
@@ -67,10 +67,11 @@ def normilize_data(dataFrame):
 
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
-    x1 = 0 
+    factors = [] 
     for i in range(1, number):
         if number % i == 0:
-            x1 = i
+            factors.append(i)
+    x1 = factors[int(len(factors)/2)+1]
     x2 = number / x1
     return x1 , int(x2)
 
@@ -85,7 +86,7 @@ def create_matrix(sample):
     x1, x2 = get_factors(len(sample))
     lim_inf = 0
     lim_sup = 0
-    cols = list_to(x1)
+    cols = list_to(x2)
     df = pd.DataFrame(columns=cols)
     for i in range(x2,len(sample)+1,x2):
         lim_sup = i
@@ -154,7 +155,7 @@ def clear_folders():
                 print(e)
         
 
-MAX_DIFF = 0.1
+MAX_DIFF = 0.21
 mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
 
 labeled_data = labeled_data[mask[1].tolist()]
