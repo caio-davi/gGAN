@@ -4,7 +4,9 @@
 
 We have diferent models for different samples sizes. 
 
-| Model     | Frequency Proximity | #n SNPs | Sample Dimensions | Labeled Disc Acc |
-| --------- | ------------------- | ------- | ----------------- | ---------------- |
-| gGan_5x5  | 0.1                 | 25      | 5x5               | (~)              |
-| gGan_12x8 | 0.21                | 96      | 12x8              | (~)              |
+| Model      | Frequency Proximity | #n SNPs | Sample Dimensions | Labeled Disc Acc |
+| ---------- | ------------------- | ------- | ----------------- | ---------------- |
+| gGan_5x5   | 0.1                 | 25      | 5x5               | (~)              |
+| gGan_12x8  | 0.21                | 96      | 12x8              | (~)              |
+| gGan_12x20 | ~                   | 240     | 12x20             | (~)              |
+
