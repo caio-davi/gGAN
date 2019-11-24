@@ -79,7 +79,7 @@ def create_values(quantity):
     values = []
     count = 0 
     if (quantity==1):
-        space = 1
+        return [0.11]
     else:
         space = 1 / (quantity - 1)
     for i in range(quantity):
@@ -87,6 +87,9 @@ def create_values(quantity):
         count += space
     return values
 
+# Map categorical dataframe into normalized numeric values following a dictionary
+def map_dataframe(dataframe, dictionary):
+    
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
     factors = [] 
