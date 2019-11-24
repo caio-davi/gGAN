@@ -65,6 +65,28 @@ def normilize_data(dataFrame):
     x_scaled = min_max_scaler.fit_transform(x)
     return pd.DataFrame(x_scaled)
 
+# Normilize data and create a dict for mapping both of the datasets
+def create_dict(dataframe):
+    dictionary = dict()
+    for feature in dataframe.columns:
+        categories = dataframe.loc[:,feature].astype("category").cat.categories
+        values = create_values(len(categories))
+        dictionary[feature] = dict(zip(categories,values))
+    return dictionary
+
+# Create a fixed sparse array between 0 and 1
+def create_values(quantity):
+    values = []
+    count = 0 
+    if (quantity==1):
+        space = 1
+    else:
+        space = 1 / (quantity - 1)
+    for i in range(quantity):
+        values.append(count)
+        count += space
+    return values
+
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
     factors = [] 
