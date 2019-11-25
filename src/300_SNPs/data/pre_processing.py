@@ -102,6 +102,11 @@ def get_factors(number):
             factors.append(i)
     x1 = factors[int(len(factors)/2)+1]
     x2 = number / x1
+
+    # shouldn't the last two numbers in the factors array be the biggest factors? So we could do something like this:
+    # x1 = factors[len(factors)-1]
+    # x2 = factors[len(factors)-2]
+    # return x1, x2
     return x1 , int(x2)
 
 def list_to(number):
@@ -144,6 +149,7 @@ def create_labeled_db():
     df = normalize_data(labeled_data)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
+            # create a matrix from df.loc since it gets the ith row
             new = create_matrix(df.loc[i,])
             new.to_csv('./labeled/DF/sample_'+str(i)+'.csv', index=False)
         if(diag[i] == 'SD'):
