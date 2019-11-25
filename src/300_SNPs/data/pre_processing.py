@@ -89,7 +89,13 @@ def create_values(quantity):
 
 # Map categorical dataframe into normalized numeric values following a dictionary
 def map_dataframe(dataframe, dictionary):
-    
+    df_coded = dataframe
+    num_samples = len(dataframe)
+    for feature in dataframe.columns:
+        for i in range(num_samples):
+            df_coded[feature][i] = dictionary[feature][df_coded[feature][i]]
+    return df_coded
+
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
     factors = [] 
