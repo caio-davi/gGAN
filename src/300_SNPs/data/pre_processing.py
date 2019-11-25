@@ -56,13 +56,11 @@ def compare_encodes(code_A, code_B, max_diff=None):
 # This will normilize the data, but I'm not sure if I can make the way back
 # Since we want to generate new datasets, we will need to do it
 # Therefore, we have to rewrite this.
-def normilize_data(dataFrame):
+def normalize_data(dataFrame):
     for feature in dataFrame.columns:
-        df_coded = dataFrame 
-        setattr(df_coded, feature, getattr(dataFrame,feature).astype("category").cat.codes)
-    x = dataFrame.values 
+        setattr(dataFrame, feature, getattr(dataFrame,feature).astype("category").cat.codes)
     min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(x)
+    x_scaled = min_max_scaler.fit_transform(dataFrame.values)
     return pd.DataFrame(x_scaled)
 
 # Normilize data and create a dict for mapping both of the datasets
@@ -136,14 +134,14 @@ def create_image(data):
 
 # Create folder with our unlabeled data from 1000Genomes
 def create_unlabeled_db():
-    df = normilize_data(unlabeled_data)
+    df = normalize_data(unlabeled_data)
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     print('End')
     
 def create_labeled_db():
-    df = normilize_data(labeled_data)
+    df = normalize_data(labeled_data)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             new = create_matrix(df.loc[i,])
@@ -154,7 +152,7 @@ def create_labeled_db():
 
 def create_splited_labeled_db(test_size=0.15):
     clear_folders()
-    df = normilize_data(labeled_data)
+    df = normalize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
     test_count = [half_test_size, half_test_size]
     for i in range(0,len(df.index)):
