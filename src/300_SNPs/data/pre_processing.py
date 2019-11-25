@@ -150,7 +150,7 @@ def create_labeled_db():
             new = create_matrix(df.loc[i,])
             new.to_csv('./labeled/SD/sample_'+str(i)+'.csv', index=False)
 
-def create_splited_labeled_db(test_size=0.15):
+def create_split_labeled_db(test_size=0.15):
     clear_folders()
     df = normalize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
