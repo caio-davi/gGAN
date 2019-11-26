@@ -140,7 +140,7 @@ def create_image(data):
     plt.savefig('../images/real_sample.png')
 
 # Create folder with our unlabeled data from 1000Genomes
-def create_unlabeled_db(dic):
+def create_unlabeled_db(unlabeled_data, dic):
 #    df = normilize_data(unlabeled_data)
     df = map_dataframe(unlabeled_data, dic)
     for i in range(0,len(df.index)):
@@ -148,9 +148,9 @@ def create_unlabeled_db(dic):
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     print('End')
     
-def create_labeled_db(dic):
+def create_labeled_db(labeled_data, dic):
 #    df = normilize_data(labeled_data)
-    df = map_dataframe(unlabeled_data, dic)
+    df = map_dataframe(labeled_data, dic)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             # create a matrix from df.loc since it gets the ith row
@@ -210,6 +210,6 @@ os.makedirs('unlabeled', exist_ok=True)
 
 dic = create_dict(labeled_data, unlabeled_data)
 
-create_labeled_db(dic)
-create_unlabeled_db(dic)
+create_labeled_db(labeled_data, dic)
+create_unlabeled_db(unlabeled_data, dic)
 # sys.exit()
