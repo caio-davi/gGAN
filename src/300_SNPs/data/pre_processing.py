@@ -64,10 +64,12 @@ def normalize_data(dataFrame):
     return pd.DataFrame(x_scaled)
 
 # Normilize data and create a dict for mapping both of the datasets
-def create_dict(dataframe):
+def create_dict(dataframe_1, dataframe_2):
     dictionary = dict()
-    for feature in dataframe.columns:
-        categories = dataframe.loc[:,feature].astype("category").cat.categories
+    for feature in dataframe_1.columns:
+        categories_1 = dataframe_1.loc[:,feature].astype("category").cat.categories
+        categories_2 = dataframe_2.loc[:,feature].astype("category").cat.categories
+        categories = list(set(categories_1) | set(categories_2))
         values = create_values(len(categories))
         dictionary[feature] = dict(zip(categories,values))
     return dictionary
@@ -93,7 +95,7 @@ def map_dataframe(dataframe, dictionary):
         for i in range(num_samples):
             df_coded[feature][i] = dictionary[feature][df_coded[feature][i]]
     return df_coded
-
+    
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
     factors = [] 
@@ -138,15 +140,17 @@ def create_image(data):
     plt.savefig('../images/real_sample.png')
 
 # Create folder with our unlabeled data from 1000Genomes
-def create_unlabeled_db():
-    df = normalize_data(unlabeled_data)
+def create_unlabeled_db(dic):
+#    df = normilize_data(unlabeled_data)
+    df = map_dataframe(unlabeled_data, dic)
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     print('End')
     
-def create_labeled_db():
-    df = normalize_data(labeled_data)
+def create_labeled_db(dic):
+#    df = normilize_data(labeled_data)
+    df = map_dataframe(unlabeled_data, dic)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             # create a matrix from df.loc since it gets the ith row
@@ -204,6 +208,8 @@ os.makedirs('labeled/DF', exist_ok=True)
 os.makedirs('labeled/SD', exist_ok=True)
 os.makedirs('unlabeled', exist_ok=True)
 
-create_labeled_db()
-create_unlabeled_db()
+dic = create_dict(labeled_data, unlabeled_data)
+
+create_labeled_db(dic)
+create_unlabeled_db(dic)
 # sys.exit()
