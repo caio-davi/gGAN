@@ -60,7 +60,7 @@ def create_mask(diff_freq, threshold):
     return pd.Series(mask)
 
 
-MAX_DIFF = 0.1
+MAX_DIFF = 0.07
 labeled_data , unlabeled_data = import_data()
 diff_freq = compare_all_frequencies(labeled_data, unlabeled_data)
 diff_freq = pd.Series(diff_freq, index=labeled_data.columns)

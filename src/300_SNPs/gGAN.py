@@ -1,6 +1,5 @@
-# example of semi-supervised gan for mnist
 import os
-import sys
+from sys import exit
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -14,96 +13,9 @@ from numpy import append
 from numpy import array_equal
 from numpy.random import randn
 from numpy.random import randint
-from keras.datasets.mnist import load_data
-from keras.optimizers import Adam
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Dense
-from keras.layers import Reshape
-from keras.layers import Flatten
-from keras.layers import Conv2D
-from keras.layers import Conv2DTranspose
-from keras.layers import LeakyReLU
-from keras.layers import Dropout
-from keras.layers import Lambda
-from keras.layers import Activation
-from keras.utils.vis_utils import plot_model
-from keras import backend
-from matplotlib import pyplot
 from datetime import datetime
-
-# custom activation function
-def custom_activation(output):
-    logexpsum = backend.sum(backend.exp(output), axis=-1, keepdims=True)
-    result = logexpsum / (logexpsum + 1.0)
-    return result
-
-# created to make sure the discriminated models had the same wheights
-def same_model(a,b):
-    return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
-
-# define the standalone supervised and unsupervised discriminator models
-def define_discriminator(in_shape=(12,20,1), n_classes=2):
-    # image input
-    in_sample = Input(shape=in_shape)
-    # downsample
-    fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(in_sample)
-    fe = LeakyReLU(alpha=0.2)(fe)
-    # downsample
-    fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(fe)
-    fe = LeakyReLU(alpha=0.2)(fe)
-    # downsample
-    fe = Conv2D(128, (3,3), strides=(2,2), padding='same')(fe)
-    fe = LeakyReLU(alpha=0.2)(fe)
-    # flatten feature maps
-    fe = Flatten()(fe)
-    # dropout
-    fe = Dropout(0.4)(fe)
-    # output layer nodes
-    fe = Dense(n_classes)(fe)
-    # supervised output
-    c_out_layer = Activation('softmax')(fe)
-    # define and compile supervised discriminator model
-    c_model = Model(in_sample, c_out_layer)
-    c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
-    # unsupervised output
-    # d_out_layer = Lambda(custom_activation)(fe)
-    d_out_layer =  Dense(1, activation='sigmoid')(fe)
-    # define and compile unsupervised discriminator model
-    d_model = Model(in_sample, d_out_layer)
-    d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5))
-    return d_model, c_model
-
-##### plot the Discriminator
-# d_model, c_model = define_discriminator()
-# plot_model(c_model, to_file='./images/discriminator1_plot.png', show_shapes=True, show_layer_names=True)
-# plot_model(d_model, to_file='./images/discriminator2_plot.png', show_shapes=True, show_layer_names=True)
-
-# define the standalone generator model
-def define_generator(latent_dim):
-    # image generator input
-    in_lat = Input(shape=(latent_dim,))
-    # foundation for 3x5 sample 
-    n_nodes = 128 * 3 * 5
-    gen = Dense(n_nodes)(in_lat)
-    gen = LeakyReLU(alpha=0.2)(gen)
-    gen = Reshape((3, 5, 128))(gen)
-    # upsample to 6x10
-    gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
-    gen = LeakyReLU(alpha=0.2)(gen)
-    # upsample to 12x20
-    gen = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same')(gen)
-    gen = LeakyReLU(alpha=0.2)(gen)
-    # output
-    out_layer = Conv2D(1, (7,7), activation='tanh', padding='same')(gen)
-    # define model
-    model = Model(in_lat, out_layer)
-    return model
-
-##### plot the Generator
-# g_model = define_generator(100)
-# plot_model(g_model, to_file='./images/generator_plot.png', show_shapes=True, show_layer_names=True)
-# sys.exit()
+from keras.models import Model
+from keras.optimizers import Adam
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -121,25 +33,18 @@ def define_gan(g_model, d_model):
 def load_from_directory(path):
     files = os.listdir(path)
     X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
+    rows_size, columns_size = X.shape
     # get samples
     for i  in range(1, len(files)):
         new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len(files),12,20)
+    X = X.reshape(len(files),rows_size,columns_size)
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
     X = X.astype('float32')
     return X
-
-# load the labeled data
-# def load_real_labeled_samples():
-#     X_training_0 = load_from_directory('./data/labeled/training/DF')
-#     X_training_1 = load_from_directory('./data/labeled/training/SD')
-#     X_test_0 = load_from_directory('./data/labeled/test/DF')
-#     X_test_1 = load_from_directory('./data/labeled/test/SD')
-#     return [X_training_0, X_training_1, X_test_0, X_test_1]
 
 # load the labeled data
 def load_real_labeled_samples():
@@ -217,6 +122,7 @@ def generate_fake_samples(generator, latent_dim, n_samples):
 def summarize_performance(step, g_model, c_model, latent_dim, test_dataset, path, log, count, save_performance=False, n_samples=100):
     X, y = test_dataset
     loss, acc = c_model.evaluate(X, y, verbose=0)
+    print(acc)
     if(save_performance):
         print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
         # acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
@@ -261,7 +167,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(loss)+','+str(acc)+'\n'
     return log
 
-def batch_train(labeled_dataset, unlabeled_dataset, n_models = 10):
+def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
@@ -271,9 +177,9 @@ def batch_train(labeled_dataset, unlabeled_dataset, n_models = 10):
         # size of the latent space
         latent_dim = 100
         # create the discriminator models
-        d_model, c_model = define_discriminator()
+        d_model, c_model = net_models.define_discriminator()
         # create the generator
-        g_model = define_generator(latent_dim)
+        g_model = net_models.define_generator(latent_dim)
         # create the gan
         gan_model = define_gan(g_model, d_model)
         # generate train and test datasets
@@ -290,8 +196,12 @@ def batch_train(labeled_dataset, unlabeled_dataset, n_models = 10):
     log_file.close()
 
 
+# import model_5x5 as net_models
+# import model_8x12 as net_models
+import model_3x4 as net_models
+
 # load  data
 labeled_dataset = load_real_labeled_samples()
 unlabeled_dataset = load_real_unlabeled_samples()
 
-batch_train(labeled_dataset,unlabeled_dataset)
+train_instances(labeled_dataset,unlabeled_dataset)

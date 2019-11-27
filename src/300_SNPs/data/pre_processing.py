@@ -107,12 +107,7 @@ def get_factors(number):
     else:
         x1 = factors[-1]
     x2 = number / x1
-
-    # shouldn't the last two numbers in the factors array be the biggest factors? So we could do something like this:
-    # x1 = factors[len(factors)-1]
-    # x2 = factors[len(factors)-2]
-    # return x1, x2
-    return x1 , int(x2)
+    return int(x2), x1
 
 def list_to(number):
     l = []
@@ -197,7 +192,7 @@ def clear_folders():
                 print(e)
         
 
-MAX_DIFF = 0.21
+MAX_DIFF = 0.07
 mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
 
 labeled_data = labeled_data[mask[1].tolist()]
