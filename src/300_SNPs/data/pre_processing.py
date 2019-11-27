@@ -56,23 +56,62 @@ def compare_encodes(code_A, code_B, max_diff=None):
 # This will normilize the data, but I'm not sure if I can make the way back
 # Since we want to generate new datasets, we will need to do it
 # Therefore, we have to rewrite this.
-def normilize_data(dataFrame):
+def normalize_data(dataFrame):
     for feature in dataFrame.columns:
-        df_coded = dataFrame 
-        setattr(df_coded, feature, getattr(dataFrame,feature).astype("category").cat.codes)
-    x = dataFrame.values 
+        setattr(dataFrame, feature, getattr(dataFrame,feature).astype("category").cat.codes)
     min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(x)
+    x_scaled = min_max_scaler.fit_transform(dataFrame.values)
     return pd.DataFrame(x_scaled)
 
+# Normilize data and create a dict for mapping both of the datasets
+def create_dict(dataframe_1, dataframe_2):
+    dictionary = dict()
+    for feature in dataframe_1.columns:
+        categories_1 = dataframe_1.loc[:,feature].astype("category").cat.categories
+        categories_2 = dataframe_2.loc[:,feature].astype("category").cat.categories
+        categories = list(set(categories_1) | set(categories_2))
+        values = create_values(len(categories))
+        dictionary[feature] = dict(zip(categories,values))
+    return dictionary
+
+# Create a fixed sparse array between 0 and 1
+def create_values(quantity):
+    values = []
+    count = 0 
+    if (quantity==1):
+        return [0.11]
+    else:
+        space = 1 / (quantity - 1)
+    for i in range(quantity):
+        values.append(count)
+        count += space
+    return values
+
+# Map categorical dataframe into normalized numeric values following a dictionary
+def map_dataframe(dataframe, dictionary):
+    df_coded = dataframe
+    num_samples = len(dataframe)
+    for feature in dataframe.columns:
+        for i in range(num_samples):
+            df_coded[feature][i] = dictionary[feature][df_coded[feature][i]]
+    return df_coded
+    
 # Dummy way to get the 2 biggest factors of a number. Just work for n>1
 def get_factors(number):
     factors = [] 
     for i in range(1, number):
         if number % i == 0:
             factors.append(i)
-    x1 = factors[int(len(factors)/2)+1]
+    if(len(factors)>3):
+        x1 = factors[int(len(factors)/2)+1]
+    else:
+        x1 = factors[-1]
     x2 = number / x1
+
+    # shouldn't the last two numbers in the factors array be the biggest factors? So we could do something like this:
+    # x1 = factors[len(factors)-1]
+    # x2 = factors[len(factors)-2]
+    # return x1, x2
     return x1 , int(x2)
 
 def list_to(number):
@@ -104,26 +143,29 @@ def create_image(data):
     plt.savefig('../images/real_sample.png')
 
 # Create folder with our unlabeled data from 1000Genomes
-def create_unlabeled_db():
-    df = normilize_data(unlabeled_data)
+def create_unlabeled_db(unlabeled_data, dic):
+#    df = normilize_data(unlabeled_data)
+    df = map_dataframe(unlabeled_data, dic)
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     print('End')
     
-def create_labeled_db():
-    df = normilize_data(labeled_data)
+def create_labeled_db(labeled_data, dic):
+#    df = normilize_data(labeled_data)
+    df = map_dataframe(labeled_data, dic)
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
+            # create a matrix from df.loc since it gets the ith row
             new = create_matrix(df.loc[i,])
             new.to_csv('./labeled/DF/sample_'+str(i)+'.csv', index=False)
         if(diag[i] == 'SD'):
             new = create_matrix(df.loc[i,])
             new.to_csv('./labeled/SD/sample_'+str(i)+'.csv', index=False)
 
-def create_splited_labeled_db(test_size=0.15):
+def create_split_labeled_db(test_size=0.15):
     clear_folders()
-    df = normilize_data(labeled_data)
+    df = normalize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
     test_count = [half_test_size, half_test_size]
     for i in range(0,len(df.index)):
@@ -169,6 +211,8 @@ os.makedirs('labeled/DF', exist_ok=True)
 os.makedirs('labeled/SD', exist_ok=True)
 os.makedirs('unlabeled', exist_ok=True)
 
-create_labeled_db()
-create_unlabeled_db()
+dic = create_dict(labeled_data, unlabeled_data)
+
+create_labeled_db(labeled_data, dic)
+create_unlabeled_db(unlabeled_data, dic)
 # sys.exit()
