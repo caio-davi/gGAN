@@ -102,7 +102,10 @@ def get_factors(number):
     for i in range(1, number):
         if number % i == 0:
             factors.append(i)
-    x1 = factors[int(len(factors)/2)+1]
+    if(len(factors)>3):
+        x1 = factors[int(len(factors)/2)+1]
+    else:
+        x1 = factors[-1]
     x2 = number / x1
 
     # shouldn't the last two numbers in the factors array be the biggest factors? So we could do something like this:

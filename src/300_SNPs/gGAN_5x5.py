@@ -1,7 +1,7 @@
 # example of semi-supervised gan for mnist
 import os
-import sys
 import numpy as np
+from sys import exit 
 from numpy.random import randint
 from numpy import expand_dims
 from numpy import delete
@@ -67,7 +67,8 @@ def define_discriminator(in_shape=(5,5,1), n_classes=2):
     c_model = Model(in_sample, c_out_layer)
     c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
     # unsupervised output
-    d_out_layer = Lambda(custom_activation)(fe)
+    # d_out_layer = Lambda(custom_activation)(fe)
+    d_out_layer =  Dense(1, activation='sigmoid')(fe)
     # define and compile unsupervised discriminator model
     d_model = Model(in_sample, d_out_layer)
     d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5))
@@ -140,14 +141,6 @@ def load_from_directory(path):
     return X
 
 # load the labeled data
-# def load_real_labeled_samples():
-#     X_training_0 = load_from_directory('./data/labeled/training/DF')
-#     X_training_1 = load_from_directory('./data/labeled/training/SD')
-#     X_test_0 = load_from_directory('./data/labeled/test/DF')
-#     X_test_1 = load_from_directory('./data/labeled/test/SD')
-#     return [X_training_0, X_training_1, X_test_0, X_test_1]
-
-# load the labeled data
 def load_real_labeled_samples():
     X_0 = load_from_directory('./data/labeled/DF')
     X_1 = load_from_directory('./data/labeled/SD')
@@ -183,8 +176,8 @@ def select_supervised_samples(dataset, n_samples=10):
     half_samples = int(n_samples/2)
     mask = np.array(dataset[1], dtype=bool)
     mask = np.reshape(mask,(dataset[0].shape[0]))
-    X_0 = dataset[0][mask]
-    X_1 = dataset[0][~mask]
+    X_0 = dataset[0][~mask]
+    X_1 = dataset[0][mask]
     ix_0 = randint(0, X_0.shape[0], half_samples)
     ix_1 = randint(0, X_1.shape[0], half_samples)
     X = append(X_0[ix_0], X_1[ix_1], axis=0)
