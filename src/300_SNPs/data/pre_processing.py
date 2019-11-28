@@ -196,7 +196,7 @@ def clear_folders():
                 print(e)
         
 
-MAX_DIFF = 0.07
+MAX_DIFF = 0.21
 mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
 
 labeled_data = labeled_data[mask[1].tolist()]
