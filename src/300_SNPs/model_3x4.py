@@ -41,7 +41,7 @@ def define_discriminator(in_shape=(3,4,1), n_classes=2):
     d_out_layer =  Dense(1, activation='sigmoid')(fe)
     # define and compile unsupervised discriminator model
     d_model = Model(in_sample, d_out_layer)
-    d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5))
+    d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
     return d_model, c_model
 
 ##### plot the Discriminator

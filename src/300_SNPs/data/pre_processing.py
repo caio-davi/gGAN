@@ -110,6 +110,7 @@ def get_factors(number):
     x2 = number / x1
     return int(x2), x1
 
+# Create a list with all numbers up to the parameter
 def list_to(number):
     l = []
     for i in range(1, number+1):

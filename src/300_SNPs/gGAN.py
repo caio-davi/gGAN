@@ -78,7 +78,7 @@ def generate_supervised_datasets(X, relative_test_size=0.2):
     y_test = append(zeros((len(X_test_0), 1 )), ones((len(X_test_1), 1 )), axis=0)
     return [X_training , y_training] , [X_test , y_test]
 
-def generate_unsupervised_datasets(X, relative_test_size=0.1):
+def generate_unsupervised_datasets(X, relative_test_size=0.05):
     test_size = half_test_size = int((X.shape[0] * relative_test_size))
     X_training, X_test = split_test_data(X, test_size)
     return X_training, X_test
@@ -152,7 +152,7 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=100):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -210,10 +210,19 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
     log_file.write(log)
     log_file.close()
 
-
 # import model_5x5 as net_models
 import model_8x12 as net_models
 # import model_3x4 as net_models
+
+# Print the gGAN model
+# def print_gGan_model(latent_dim):
+#     from keras.utils.vis_utils import plot_model
+#     d_model, c_model = net_models.define_discriminator()
+#     g_model = net_models.define_generator(latent_dim)
+#     plot_model(g_model, to_file='./images/gGan.png', show_shapes=True, show_layer_names=True)
+# 
+# print_gGan_model(100)
+# exit()
 
 # load  data
 labeled_dataset = load_real_labeled_samples()
