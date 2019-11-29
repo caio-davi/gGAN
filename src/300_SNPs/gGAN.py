@@ -152,7 +152,7 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=100):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
