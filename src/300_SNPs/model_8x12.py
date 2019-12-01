@@ -38,13 +38,13 @@ def define_discriminator(in_shape=(8,12,1), n_classes=2):
     c_out_layer = Activation('softmax')(fe)
     # define and compile supervised discriminator model
     c_model = Model(in_sample, c_out_layer)
-    c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
+    c_model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.002, beta_1=0.5), metrics=['accuracy'])
     # unsupervised output
     # d_out_layer = Lambda(custom_activation)(fe)
     d_out_layer =  Dense(1, activation='sigmoid')(fe)
     # define and compile unsupervised discriminator model
     d_model = Model(in_sample, d_out_layer)
-    d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5))
+    d_model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.0002, beta_1=0.5), metrics=['accuracy'])
     return d_model, c_model
 
 # ##### plot the Discriminator

@@ -78,6 +78,11 @@ def generate_supervised_datasets(X, relative_test_size=0.2):
     y_test = append(zeros((len(X_test_0), 1 )), ones((len(X_test_1), 1 )), axis=0)
     return [X_training , y_training] , [X_test , y_test]
 
+def generate_unsupervised_datasets(X, relative_test_size=0.05):
+    test_size = half_test_size = int((X.shape[0] * relative_test_size))
+    X_training, X_test = split_test_data(X, test_size)
+    return X_training, X_test
+
 def select_supervised_samples(dataset, n_samples=10):
     half_samples = int(n_samples/2)
     mask = np.array(dataset[1], dtype=bool)
@@ -113,16 +118,24 @@ def generate_fake_samples(generator, latent_dim, n_samples):
     # generate points in latent space
     z_input = generate_latent_points(latent_dim, n_samples)
     # predict outputs
-    images = generator.predict(z_input)
+    samples = generator.predict(z_input)
     # create class labels
     y = zeros((n_samples, 1))
-    return images, y
+    return samples, y
+
+def generate_unsupervised_test_dataset(g_model, latent_dim, X_real):
+    y_real = ones((X_real.shape[0], 1))
+    X_fake, y_fake = generate_fake_samples(g_model, latent_dim, X_real.shape[0])
+    X = append(X_fake, X_real, axis=0)
+    y = append(y_fake, y_real, axis=0)
+    return X, y 
 
 # generate samples and save as a plot and save the model
-def summarize_performance(step, g_model, c_model, latent_dim, test_dataset, path, log, count, save_performance=False, n_samples=100):
-    X, y = test_dataset
-    loss, acc = c_model.evaluate(X, y, verbose=0)
-    print(acc)
+def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, count, save_performance=False, n_samples=100):
+    X, y = labeled_test_dataset
+    labeled_loss, labeled_acc = c_model.evaluate(X, y, verbose=0)
+    X, y = generate_unsupervised_test_dataset(g_model, latent_dim, unlabeled_test_dataset)
+    unlabeled_loss, unlabeled_acc = d_model.evaluate(X, y, verbose=0)
     if(save_performance):
         print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
         # acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
@@ -135,11 +148,11 @@ def summarize_performance(step, g_model, c_model, latent_dim, test_dataset, path
         filename2 = new_path + 'c_model_%04d.h5' % (step+1)
         c_model.save(filename2)
         print('>Saved: %s and %s' % (filename1, filename2))
-    return loss, acc
+    return labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -163,16 +176,16 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i+1) % (bat_per_epo * 1) == 0:
-            loss, acc = summarize_performance(i, g_model, c_model, latent_dim, labeled_test_dataset, path, log, i+1)
-            log = log + str(n_instance+1)+','+str(i+1)+','+str(loss)+','+str(acc)+'\n'
+            labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
     return log
 
-def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
+def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
     log = ''
-    log = log + 'instance,step,loss,acc\n'
+    log = log + 'instance,step,labeled_loss,labeled_acc,unlabeled_loss,unlabeled_acc\n'
     for i in range(n_models):
         # size of the latent space
         latent_dim = 100
@@ -182,12 +195,14 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
         g_model = net_models.define_generator(latent_dim)
         # create the gan
         gan_model = define_gan(g_model, d_model)
-        # generate train and test datasets
+        # generate train and test LABELED datasets
         labeled_train_dataset, labeled_test_dataset = generate_supervised_datasets(labeled_dataset)
+        # generate train and test UNLABELED datasets
+        unlabeled_train_dataset, unlabeled_test_dataset = generate_unsupervised_datasets(unlabeled_dataset)
         # relative size of the test data
         test_size = 0.2
         # train model
-        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, latent_dim, test_size, path, i)
+        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
         # uptade the log
         log = log + train_log
     log_name = path + 'test_'+datetime.now().isoformat()+'.log'
@@ -195,10 +210,20 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
     log_file.write(log)
     log_file.close()
 
-
 # import model_5x5 as net_models
 # import model_8x12 as net_models
 import model_3x4 as net_models
+
+# Print the gGAN model
+# def print_gGan_model(latent_dim):
+#     from keras.utils.vis_utils import plot_model
+#     d_model, c_model = net_models.define_discriminator()
+#     g_model = net_models.define_generator(latent_dim)
+#     gan_model = define_gan(g_model, d_model)
+#     plot_model(gan_model, to_file='./images/gGan.png', show_shapes=True, show_layer_names=True)
+
+# print_gGan_model(100)
+# exit()
 
 # load  data
 labeled_dataset = load_real_labeled_samples()

@@ -110,6 +110,7 @@ def get_factors(number):
     x2 = number / x1
     return int(x2), x1
 
+# Create a list with all numbers up to the parameter
 def list_to(number):
     l = []
     for i in range(1, number+1):
@@ -196,8 +197,9 @@ def clear_folders():
                 print(e)
         
 
-MAX_DIFF = 0.07
-mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
+MAX_DIFF = 0.21
+# mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
+mask = pd.read_csv('./masks/dengue_paper.csv', index_col=None, header=None)
 
 labeled_data = labeled_data[mask[1].tolist()]
 unlabeled_data = unlabeled_data[mask[1].tolist()]
