@@ -152,7 +152,7 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -180,7 +180,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
     return log
 
-def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
+def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
@@ -211,16 +211,17 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 1):
     log_file.close()
 
 # import model_5x5 as net_models
-import model_8x12 as net_models
-# import model_3x4 as net_models
+# import model_8x12 as net_models
+import model_3x4 as net_models
 
 # Print the gGAN model
 # def print_gGan_model(latent_dim):
 #     from keras.utils.vis_utils import plot_model
 #     d_model, c_model = net_models.define_discriminator()
 #     g_model = net_models.define_generator(latent_dim)
-#     plot_model(g_model, to_file='./images/gGan.png', show_shapes=True, show_layer_names=True)
-# 
+#     gan_model = define_gan(g_model, d_model)
+#     plot_model(gan_model, to_file='./images/gGan.png', show_shapes=True, show_layer_names=True)
+
 # print_gGan_model(100)
 # exit()
 
