@@ -75,7 +75,7 @@ def create_values(quantity):
 
 # Map categorical dataframe into normalized numeric values following a dictionary
 def map_dataframe(dataframe, dictionary):
-    print("Mapping DataFrame...")
+    print("[x] Mapping DataFrame...")
     df_coded = dataframe
     num_samples = len(dataframe)
     for feature in dataframe.columns:
@@ -129,7 +129,7 @@ def create_image(data):
 def create_unlabeled_db(unlabeled_data, dic):
 #    df = normilize_data(unlabeled_data)
     df = map_dataframe(unlabeled_data, dic)
-    print("Generating Sample CSV files...")
+    print("[x] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
@@ -137,7 +137,7 @@ def create_unlabeled_db(unlabeled_data, dic):
 def create_labeled_db(labeled_data, diag, dic):
 #    df = normilize_data(labeled_data)
     df = map_dataframe(labeled_data, dic)
-    print("Generating Sample CSV files...")
+    print("[x] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             # create a matrix from df.loc since it gets the ith row
@@ -152,7 +152,7 @@ def create_split_labeled_db(test_size=0.15):
     df = normalize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
     test_count = [half_test_size, half_test_size]
-    print("Generating Sample CSV files...")    
+    print("[x] Generating Sample CSV files...")    
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             new = create_matrix(df.loc[i,])
@@ -215,8 +215,8 @@ def init():
     clear_folders()
     create_folders()
 
-    print("Creating Labeled Sample Data...")
+    print("[x] Creating Labeled Sample Data...")
     create_labeled_db(labeled_data, diag, dic)
-    print("Creating Unlabeled Sample Data...")
+    print("[x] Creating Unlabeled Sample Data...")
     create_unlabeled_db(unlabeled_data, dic)
-    print("Finished Pre-Processing Data")
+    print("[*] Finished Pre-Processing Data")
