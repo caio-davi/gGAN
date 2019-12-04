@@ -133,7 +133,6 @@ def create_unlabeled_db(unlabeled_data, dic):
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
-    print('End')
     
 def create_labeled_db(labeled_data, dic):
 #    df = normilize_data(labeled_data)
@@ -214,3 +213,4 @@ print("Creating Labeled Sample Data...")
 create_labeled_db(labeled_data, dic)
 print("Creating Unlabeled Sample Data...")
 create_unlabeled_db(unlabeled_data, dic)
+print("Finished Pre-Processing Data")
