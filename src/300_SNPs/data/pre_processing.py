@@ -168,9 +168,18 @@ def create_split_labeled_db(test_size=0.15):
                 test_count[1] -= 1
             else:
                 new.to_csv('./labeled/training/SD/sample_'+str(i)+'.csv')
+
+def create_folders():
+    os.makedirs('labeled/training/SD', exist_ok=True)
+    os.makedirs('labeled/training/DF', exist_ok=True)
+    os.makedirs('labeled/test/SD', exist_ok=True)
+    os.makedirs('labeled/test/DF', exist_ok=True)
+    os.makedirs('labeled/DF', exist_ok=True)
+    os.makedirs('labeled/SD', exist_ok=True)
+    os.makedirs('unlabeled', exist_ok=True)
             
 def clear_folders():
-    folders = ['./labeled/test/DF','./labeled/training/DF', './labeled/test/SD', './labeled/training/SD' ] 
+    folders = ['./labeled/test/DF','./labeled/test/SD', './labeled/training/DF', './labeled/training/SD' ] 
     for folder in folders:
         for the_file in os.listdir(folder):
             file_path = os.path.join(folder, the_file)
@@ -199,15 +208,11 @@ mask = pd.read_csv('./masks/dengue_paper.csv', index_col=None, header=None)
 labeled_data = labeled_data[mask[1].tolist()]
 unlabeled_data = unlabeled_data[mask[1].tolist()]
 
-os.makedirs('labeled/training/SD', exist_ok=True)
-os.makedirs('labeled/training/DF', exist_ok=True)
-os.makedirs('labeled/test/SD', exist_ok=True)
-os.makedirs('labeled/test/DF', exist_ok=True)
-os.makedirs('labeled/DF', exist_ok=True)
-os.makedirs('labeled/SD', exist_ok=True)
-os.makedirs('unlabeled', exist_ok=True)
-
 dic = create_dict(labeled_data, unlabeled_data)
+
+# clear folders and recreate them
+clear_folders()
+create_folders()
 
 print("Creating Labeled Sample Data...")
 create_labeled_db(labeled_data, dic)
