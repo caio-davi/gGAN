@@ -1,5 +1,7 @@
 import os
 from sys import exit
+# import sys
+# sys.path.append('./data')
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -16,6 +18,10 @@ from numpy.random import randint
 from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
+# import model_5x5 as net_models
+# import model_8x12 as net_models
+import model_3x4 as net_models
+# import pre_processing
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -152,7 +158,7 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
+def train(labeled_dataset, unlabeled_dataset, g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -202,17 +208,13 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
         # relative size of the test data
         test_size = 0.2
         # train model
-        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
+        train_log = train(labeled_dataset, unlabeled_dataset, g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
         # uptade the log
         log = log + train_log
     log_name = path + 'test_'+datetime.now().isoformat()+'.log'
     log_file = open(log_name, "w")
     log_file.write(log)
     log_file.close()
-
-# import model_5x5 as net_models
-# import model_8x12 as net_models
-import model_3x4 as net_models
 
 # Print the gGAN model
 # def print_gGan_model(latent_dim):
@@ -225,8 +227,13 @@ import model_3x4 as net_models
 # print_gGan_model(100)
 # exit()
 
-# load  data
-labeled_dataset = load_real_labeled_samples()
-unlabeled_dataset = load_real_unlabeled_samples()
+def main():
+    # load  data
+    labeled_dataset = load_real_labeled_samples()
+    unlabeled_dataset = load_real_unlabeled_samples()
 
-train_instances(labeled_dataset,unlabeled_dataset)
+    # train
+    train_instances(labeled_dataset,unlabeled_dataset)
+
+if __name__ == '__main__':
+    main()
