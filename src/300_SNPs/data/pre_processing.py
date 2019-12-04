@@ -3,7 +3,7 @@ from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import os, shutil
-from sys import exit 
+from sys import exit
 
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
@@ -134,7 +134,7 @@ def create_unlabeled_db(unlabeled_data, dic):
         new = create_matrix(df.loc[i,])
         new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
     
-def create_labeled_db(labeled_data, dic):
+def create_labeled_db(labeled_data, diag, dic):
 #    df = normilize_data(labeled_data)
     df = map_dataframe(labeled_data, dic)
     print("Generating Sample CSV files...")
@@ -190,32 +190,33 @@ def clear_folders():
             except Exception as e:
                 print(e)
 
-# From Dengue Paper
-labeled_data = pd.read_csv('labeled.csv', header=0)
-diag = labeled_data['diagnose']
-labeled_data = labeled_data.drop(['ID'], axis=1)
+def init():
+    # From Dengue Paper
+    labeled_data = pd.read_csv('labeled.csv', header=0)
+    diag = labeled_data['diagnose']
+    labeled_data = labeled_data.drop(['ID'], axis=1)
 
-# From 1000Genomes
-unlabeled_data = pd.read_csv('unlabeled.csv', sep=';',header=0)
-unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
+    # From 1000Genomes
+    unlabeled_data = pd.read_csv('unlabeled.csv', sep=';',header=0)
+    unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
 
-labeled_data = labeled_data[unlabeled_data.columns]
+    labeled_data = labeled_data[unlabeled_data.columns]
 
-MAX_DIFF = 0.21
-# mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
-mask = pd.read_csv('./masks/dengue_paper.csv', index_col=None, header=None)
+    MAX_DIFF = 0.21
+    # mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
+    mask = pd.read_csv('./masks/dengue_paper.csv', index_col=None, header=None)
 
-labeled_data = labeled_data[mask[1].tolist()]
-unlabeled_data = unlabeled_data[mask[1].tolist()]
+    labeled_data = labeled_data[mask[1].tolist()]
+    unlabeled_data = unlabeled_data[mask[1].tolist()]
 
-dic = create_dict(labeled_data, unlabeled_data)
+    dic = create_dict(labeled_data, unlabeled_data)
 
-# clear folders and recreate them
-clear_folders()
-create_folders()
+    # clear folders and recreate them
+    clear_folders()
+    create_folders()
 
-print("Creating Labeled Sample Data...")
-create_labeled_db(labeled_data, dic)
-print("Creating Unlabeled Sample Data...")
-create_unlabeled_db(unlabeled_data, dic)
-print("Finished Pre-Processing Data")
+    print("Creating Labeled Sample Data...")
+    create_labeled_db(labeled_data, diag, dic)
+    print("Creating Unlabeled Sample Data...")
+    create_unlabeled_db(unlabeled_data, dic)
+    print("Finished Pre-Processing Data")
