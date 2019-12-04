@@ -1,5 +1,7 @@
 import os
 from sys import exit
+# import sys
+# sys.path.append('./data')
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -19,6 +21,7 @@ from keras.optimizers import Adam
 # import model_5x5 as net_models
 # import model_8x12 as net_models
 import model_3x4 as net_models
+# import pre_processing
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
