@@ -5,20 +5,6 @@ from sklearn import preprocessing
 import os, shutil
 from sys import exit 
 
-# Importing data and removing unnecessary headers
-
-# From Dengue Paper
-labeled_data = pd.read_csv('labeled.csv', header=0)
-diag = labeled_data['diagnose']
-labeled_data = labeled_data.drop(['ID'], axis=1)
-
-# From 1000Genomes
-unlabeled_data = pd.read_csv('unlabeled.csv', sep=';',header=0)
-unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
-
-labeled_data = labeled_data[unlabeled_data.columns]
-
-
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
     names = []
@@ -195,7 +181,17 @@ def clear_folders():
                 #elif os.path.isdir(file_path): shutil.rmtree(file_path)
             except Exception as e:
                 print(e)
-        
+
+# From Dengue Paper
+labeled_data = pd.read_csv('labeled.csv', header=0)
+diag = labeled_data['diagnose']
+labeled_data = labeled_data.drop(['ID'], axis=1)
+
+# From 1000Genomes
+unlabeled_data = pd.read_csv('unlabeled.csv', sep=';',header=0)
+unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
+
+labeled_data = labeled_data[unlabeled_data.columns]
 
 MAX_DIFF = 0.21
 # mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
@@ -214,8 +210,7 @@ os.makedirs('unlabeled', exist_ok=True)
 
 dic = create_dict(labeled_data, unlabeled_data)
 
-print("Created Labeled Sample Data...")
+print("Creating Labeled Sample Data...")
 create_labeled_db(labeled_data, dic)
 print("Creating Unlabeled Sample Data...")
 create_unlabeled_db(unlabeled_data, dic)
-# sys.exit()
