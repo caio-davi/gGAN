@@ -75,7 +75,7 @@ def create_values(quantity):
 
 # Map categorical dataframe into normalized numeric values following a dictionary
 def map_dataframe(dataframe, dictionary):
-    print("[x] Mapping DataFrame...")
+    print("[INFO] Mapping DataFrame...")
     df_coded = dataframe
     num_samples = len(dataframe)
     for feature in dataframe.columns:
@@ -129,57 +129,57 @@ def create_image(data):
 def create_unlabeled_db(unlabeled_data, dic):
 #    df = normilize_data(unlabeled_data)
     df = map_dataframe(unlabeled_data, dic)
-    print("[x] Generating Sample CSV files...")
+    print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
         new = create_matrix(df.loc[i,])
-        new.to_csv('./unlabeled/sample_'+str(i)+'.csv', index=False)
+        new.to_csv('data/unlabeled/sample_'+str(i)+'.csv', index=False)
     
 def create_labeled_db(labeled_data, diag, dic):
 #    df = normilize_data(labeled_data)
     df = map_dataframe(labeled_data, dic)
-    print("[x] Generating Sample CSV files...")
+    print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             # create a matrix from df.loc since it gets the ith row
             new = create_matrix(df.loc[i,])
-            new.to_csv('./labeled/DF/sample_'+str(i)+'.csv', index=False)
+            new.to_csv('data/labeled/DF/sample_'+str(i)+'.csv', index=False)
         if(diag[i] == 'SD'):
             new = create_matrix(df.loc[i,])
-            new.to_csv('./labeled/SD/sample_'+str(i)+'.csv', index=False)
+            new.to_csv('data/labeled/SD/sample_'+str(i)+'.csv', index=False)
 
 def create_split_labeled_db(test_size=0.15):
     clear_folders()
     df = normalize_data(labeled_data)
     half_test_size = int((len(df.index)*test_size/2))
     test_count = [half_test_size, half_test_size]
-    print("[x] Generating Sample CSV files...")    
+    print("[INFO] Generating Sample CSV files...")    
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
             new = create_matrix(df.loc[i,])
             if(test_count[0]>0):
-                new.to_csv('./labeled/test/DF/sample_'+str(i)+'.csv')
+                new.to_csv('data/labeled/test/DF/sample_'+str(i)+'.csv')
                 test_count[0] -= 1
             else:
-                new.to_csv('./labeled/training/DF/sample_'+str(i)+'.csv')
+                new.to_csv('data/labeled/training/DF/sample_'+str(i)+'.csv')
         if(diag[i] == 'SD'):
             new = create_matrix(df.loc[i,])
             if(test_count[1]>0):
-                new.to_csv('./labeled/test/SD/sample_'+str(i)+'.csv')
+                new.to_csv('data/labeled/test/SD/sample_'+str(i)+'.csv')
                 test_count[1] -= 1
             else:
-                new.to_csv('./labeled/training/SD/sample_'+str(i)+'.csv')
+                new.to_csv('data/labeled/training/SD/sample_'+str(i)+'.csv')
 
 def create_folders():
-    os.makedirs('labeled/training/SD', exist_ok=True)
-    os.makedirs('labeled/training/DF', exist_ok=True)
-    os.makedirs('labeled/test/SD', exist_ok=True)
-    os.makedirs('labeled/test/DF', exist_ok=True)
-    os.makedirs('labeled/DF', exist_ok=True)
-    os.makedirs('labeled/SD', exist_ok=True)
-    os.makedirs('unlabeled', exist_ok=True)
+    os.makedirs('data/labeled/training/SD', exist_ok=True)
+    os.makedirs('data/labeled/training/DF', exist_ok=True)
+    os.makedirs('data/labeled/test/SD', exist_ok=True)
+    os.makedirs('data/labeled/test/DF', exist_ok=True)
+    os.makedirs('data/labeled/DF', exist_ok=True)
+    os.makedirs('data/labeled/SD', exist_ok=True)
+    os.makedirs('data/unlabeled', exist_ok=True)
             
 def clear_folders():
-    folders = ['./labeled/test/DF','./labeled/test/SD', './labeled/training/DF', './labeled/training/SD' ] 
+    folders = ['data/labeled/test/DF','data/labeled/test/SD', 'data/labeled/training/DF', 'data/labeled/training/SD' ] 
     for folder in folders:
         for the_file in os.listdir(folder):
             file_path = os.path.join(folder, the_file)
@@ -192,19 +192,19 @@ def clear_folders():
 
 def init():
     # From Dengue Paper
-    labeled_data = pd.read_csv('labeled.csv', header=0)
+    labeled_data = pd.read_csv('data/labeled.csv', header=0)
     diag = labeled_data['diagnose']
     labeled_data = labeled_data.drop(['ID'], axis=1)
 
     # From 1000Genomes
-    unlabeled_data = pd.read_csv('unlabeled.csv', sep=';',header=0)
+    unlabeled_data = pd.read_csv('data/unlabeled.csv', sep=';',header=0)
     unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
 
     labeled_data = labeled_data[unlabeled_data.columns]
 
     MAX_DIFF = 0.21
     # mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
-    mask = pd.read_csv('./masks/dengue_paper.csv', index_col=None, header=None)
+    mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
 
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]
@@ -212,11 +212,11 @@ def init():
     dic = create_dict(labeled_data, unlabeled_data)
 
     # clear folders and recreate them
-    clear_folders()
+    # clear_folders() # issue with clearing folders since they may not exist on the first run
     create_folders()
 
-    print("[x] Creating Labeled Sample Data...")
+    print("[INFO] Creating Labeled Sample Data...")
     create_labeled_db(labeled_data, diag, dic)
-    print("[x] Creating Unlabeled Sample Data...")
+    print("[INFO] Creating Unlabeled Sample Data...")
     create_unlabeled_db(unlabeled_data, dic)
-    print("[*] Finished Pre-Processing Data")
+    print("[DONE] Finished Pre-Processing Data")

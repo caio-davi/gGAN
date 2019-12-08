@@ -1,4 +1,5 @@
 import os
+import sys
 from sys import exit
 import numpy as np
 from numpy.random import randint
@@ -19,8 +20,10 @@ from keras.optimizers import Adam
 import model_3x4 as net_models_3x4
 import model_5x5 as net_models_5x5
 import model_8x12 as net_models_8x12
-# import pre_processing
 import argparse
+
+sys.path.insert(1, 'data/')
+import pre_processing
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -246,20 +249,24 @@ def main():
     
     # check model argument to make sure the right model is set if not then exit
     if args.model == "3x4" or args.model == "5x5" or args.model == "8x12":
-        print("[x] Running GAN with a max diff of:", args.max_diff)
-        print("[x] Running GAN with model:", args.model)
+        print("[INFO] Running GAN with a max diff of:", args.max_diff)
+        print("[INFO] Running GAN with model:", args.model)
     else:
         print("[ERROR] Invalid model set:", args.model)
         exit()
 
+    print("[INFO] Pre-Processing Data...")
+    pre_processing.init()
+
     # load  data
-    print("[x] Loading data...")
+    print("[INFO] Loading data...")
     labeled_dataset = load_real_labeled_samples()
     unlabeled_dataset = load_real_unlabeled_samples()
 
     # train
-    print("[x] Training model...")
+    print("[INFO] Training model...")
     train_instances(labeled_dataset,unlabeled_dataset, args.model)
+    print("[DONE] Finished.")
 
 if __name__ == '__main__':
     main()
