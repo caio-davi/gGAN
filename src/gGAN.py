@@ -22,6 +22,7 @@ from keras.optimizers import Adam
 # import model_8x12 as net_models
 import model_3x4 as net_models
 # import pre_processing
+import argparse
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -228,6 +229,12 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
 # exit()
 
 def main():
+    # parse args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("max_diff", help="The max diff", type=float)
+    parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
+    parser.parse_args()
+
     # load  data
     labeled_dataset = load_real_labeled_samples()
     unlabeled_dataset = load_real_unlabeled_samples()
