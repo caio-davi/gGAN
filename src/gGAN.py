@@ -1,7 +1,5 @@
 import os
 from sys import exit
-# import sys
-# sys.path.append('./data')
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -18,9 +16,9 @@ from numpy.random import randint
 from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
-# import model_5x5 as net_models
-# import model_8x12 as net_models
-import model_3x4 as net_models
+import model_3x4 as net_models_3x4
+import model_5x5 as net_models_5x5
+import model_8x12 as net_models_8x12
 # import pre_processing
 import argparse
 
@@ -187,7 +185,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
     return log
 
-def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
+def train_instances(labeled_dataset, unlabeled_dataset, model, n_models = 10):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
@@ -196,10 +194,21 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
     for i in range(n_models):
         # size of the latent space
         latent_dim = 100
-        # create the discriminator models
-        d_model, c_model = net_models.define_discriminator()
-        # create the generator
-        g_model = net_models.define_generator(latent_dim)
+        if (model == "3x4"):
+            # create the discriminator models
+            d_model, c_model = net_models_3x4.define_discriminator()
+            # create the generator
+            g_model = net_models_3x4.define_generator(latent_dim)
+        elif (model == "5x5"):
+            # create the discriminator models
+            d_model, c_model = net_models_5x5.define_discriminator()
+            # create the generator
+            g_model = net_models_5x5.define_generator(latent_dim)
+        elif (model == "8x12"):
+            # create the discriminator models
+            d_model, c_model = net_models_8x12.define_discriminator()
+            # create the generator
+            g_model = net_models_8x12.define_generator(latent_dim)
         # create the gan
         gan_model = define_gan(g_model, d_model)
         # generate train and test LABELED datasets
@@ -233,14 +242,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("max_diff", help="The max diff", type=float)
     parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
-    parser.parse_args()
+    args = parser.parse_args()
+    # check model to make sure the right args are set if not then exit
 
     # load  data
     labeled_dataset = load_real_labeled_samples()
     unlabeled_dataset = load_real_unlabeled_samples()
 
     # train
-    train_instances(labeled_dataset,unlabeled_dataset)
+    train_instances(labeled_dataset,unlabeled_dataset, args.model)
 
 if __name__ == '__main__':
     main()
