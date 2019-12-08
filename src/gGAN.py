@@ -243,13 +243,22 @@ def main():
     parser.add_argument("max_diff", help="The max diff", type=float)
     parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
     args = parser.parse_args()
-    # check model to make sure the right args are set if not then exit
+    
+    # check model argument to make sure the right model is set if not then exit
+    if args.model == "3x4" or args.model == "5x5" or args.model == "8x12":
+        print("[x] Running GAN with a max diff of:", args.max_diff)
+        print("[x] Running GAN with model:", args.model)
+    else:
+        print("[ERROR] Invalid model set:", args.model)
+        exit()
 
     # load  data
+    print("[x] Loading data...")
     labeled_dataset = load_real_labeled_samples()
     unlabeled_dataset = load_real_unlabeled_samples()
 
     # train
+    print("[x] Training model...")
     train_instances(labeled_dataset,unlabeled_dataset, args.model)
 
 if __name__ == '__main__':
