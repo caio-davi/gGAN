@@ -158,9 +158,9 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(labeled_dataset, unlabeled_dataset, g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
     # calculate the number of batches per training epoch
-    bat_per_epo = int(unlabeled_dataset.shape[0] / n_batch)
+    bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
     n_steps = bat_per_epo * n_epochs
     # calculate the size of half a batch of samples
@@ -171,7 +171,7 @@ def train(labeled_dataset, unlabeled_dataset, g_model, d_model, c_model, gan_mod
         [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
         # update unsupervised discriminator (d)
-        [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset)
+        [X_real, y_real] = select_unsupervised_samples(unlabeled_train_dataset)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
         X_fake, y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
         d_loss2 = d_model.train_on_batch(X_fake, y_fake)
@@ -208,7 +208,7 @@ def train_instances(labeled_dataset, unlabeled_dataset, n_models = 10):
         # relative size of the test data
         test_size = 0.2
         # train model
-        train_log = train(labeled_dataset, unlabeled_dataset, g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
+        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
         # uptade the log
         log = log + train_log
     log_name = path + 'test_'+datetime.now().isoformat()+'.log'
