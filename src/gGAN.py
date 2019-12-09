@@ -218,7 +218,7 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
 def main():
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("afp", help="The threshold for the allelic freqeuncy proximity. Options are: 0.07, 0.10, 0.21", type=str)
+    parser.add_argument("afp", help="The threshold for the allelic freqeuncy proximity. Options are: 0.07, 0.10, 0.21")
     #parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
     args = parser.parse_args()
     
@@ -228,14 +228,6 @@ def main():
         '0.21' : '8x12',
     }
 
-    net_models = ''
-    if args.afp == '0.07':
-        net_model = __import__('model_3x4', globals(), locals(), 0)
-    elif args.afp == '0.10':
-        net_model = __import__('model_5x5', globals(), locals(), 0)
-    elif args.afp == '0.21':
-        net_model = __import__('model_8x12', globals(), locals(), 0)
-
     # check model argument to make sure the right model is set if not then exit
     if args.afp in model_dict:
         print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afp)
@@ -243,6 +235,14 @@ def main():
     else:
         print("[ERROR] Invalid model set:", args.afp)
         exit()
+
+    net_models = ''
+    if args.afp == '0.07':
+        net_model = __import__('model_3x4', globals(), locals(), 0)
+    elif args.afp == '0.10':
+        net_model = __import__('model_5x5', globals(), locals(), 0)
+    elif args.afp == '0.21':
+        net_model = __import__('model_8x12', globals(), locals(), 0)
 
     print("[INFO] Pre-Processing Data...")
     pre_processing.init(args.afp)
