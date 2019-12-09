@@ -14,8 +14,28 @@ docker build . -t csce
 docker  run -it -v $PWD:/workspace csce bash
 ```
 
+After that your enviroument should be setted. You can run the gGAN using:
+
+```
+python gGAN.py 0.07
+```
+This will run the gGAN with the max allelic frequency threshold of 0.07, you can run for help to know which are the availables thresholds. (Actually, the options are listed at the table in the next sectoin, under the column "Frequency Proximity").
+The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After run the gGAN the logs of test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some hard code into the file, as well.
+
+## Models
+
+We have diferent models for different samples sizes. 
+
+| Model     | Frequency Proximity | #n SNPs | Sample Dimensions |
+| --------- | ------------------- | ------- | ----------------- |
+| gGan_3x4  | 0.07                | 12      | 3x4               |
+| gGan_5x5  | 0.10                | 25      | 5x5               |
+| gGan_8x12 | 0.21                | 96      | 8x12              |
+
+
 ## Related Researches
 
-- [Generative adversarial networks simulate gene expression and predict perturbations in single cells](https://www.biorxiv.org/content/10.1101/262501v2.full) - [Github](https://github.com/luslab/scRNAseq-WGAN-GP)
-
-This work is already included in this repository in the directory `/src/scRNAseq-WGAN`. Unfortunately, the database used here is too large to a gitHub repository, therefore it has to be downloaded following the instructions on their [Github](https://github.com/luslab/scRNAseq-WGAN-GP).
+- [Severe Dengue Prognosis Using Human Genome Data and Machine Learning](https://ieeexplore.ieee.org/abstract/document/8633395)
+- [Characterization of a Dengue Patient Cohort in Recife, Brazil](https://www.ajtmh.org/content/journals/10.4269/ajtmh.2007.77.1128)
+- [1000 Genomes project](https://www.nature.com/articles/nbt0308-256b)
+- [Semi-Supervised Learning with Generative Adversarial Networks](https://arxiv.org/abs/1606.01583)

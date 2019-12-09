@@ -17,9 +17,6 @@ from numpy.random import randint
 from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
-import model_3x4 as net_models_3x4
-import model_5x5 as net_models_5x5
-import model_8x12 as net_models_8x12
 import argparse
 
 sys.path.insert(1, 'data/')
@@ -160,7 +157,7 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -188,30 +185,19 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
     return log
 
-def train_instances(labeled_dataset, unlabeled_dataset, model, n_models = 10):
+def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
     # path to save logs, performances and fake samples files
     path = './run/'
     # log summary
     log = ''
     log = log + 'instance,step,labeled_loss,labeled_acc,unlabeled_loss,unlabeled_acc\n'
-    for i in range(n_models):
+    for i in range(n_instances):
         # size of the latent space
         latent_dim = 100
-        if (model == "3x4"):
-            # create the discriminator models
-            d_model, c_model = net_models_3x4.define_discriminator()
-            # create the generator
-            g_model = net_models_3x4.define_generator(latent_dim)
-        elif (model == "5x5"):
-            # create the discriminator models
-            d_model, c_model = net_models_5x5.define_discriminator()
-            # create the generator
-            g_model = net_models_5x5.define_generator(latent_dim)
-        elif (model == "8x12"):
-            # create the discriminator models
-            d_model, c_model = net_models_8x12.define_discriminator()
-            # create the generator
-            g_model = net_models_8x12.define_generator(latent_dim)
+        # create the discriminator models
+        d_model, c_model = net_model.define_discriminator()
+        # create the generator
+        g_model = net_model.define_generator(latent_dim)
         # create the gan
         gan_model = define_gan(g_model, d_model)
         # generate train and test LABELED datasets
@@ -229,34 +215,37 @@ def train_instances(labeled_dataset, unlabeled_dataset, model, n_models = 10):
     log_file.write(log)
     log_file.close()
 
-# Print the gGAN model
-# def print_gGan_model(latent_dim):
-#     from keras.utils.vis_utils import plot_model
-#     d_model, c_model = net_models.define_discriminator()
-#     g_model = net_models.define_generator(latent_dim)
-#     gan_model = define_gan(g_model, d_model)
-#     plot_model(gan_model, to_file='./images/gGan.png', show_shapes=True, show_layer_names=True)
-
-# print_gGan_model(100)
-# exit()
-
 def main():
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("max_diff", help="The max diff", type=float)
-    parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
+    parser.add_argument("afp", help="The threshold for the allelic freqeuncy proximity. Options are: 0.07, 0.10, 0.21", type=str)
+    #parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
     args = parser.parse_args()
     
+    model_dict = {
+        '0.07' : '3x4',
+        '0.10' : '5x5',
+        '0.21' : '8x12',
+    }
+
+    net_models = ''
+    if args.afp == '0.07':
+        net_model = __import__('model_3x4', globals(), locals(), 0)
+    elif args.afp == '0.10':
+        net_model = __import__('model_5x5', globals(), locals(), 0)
+    elif args.afp == '0.21':
+        net_model = __import__('model_8x12', globals(), locals(), 0)
+
     # check model argument to make sure the right model is set if not then exit
-    if args.model == "3x4" or args.model == "5x5" or args.model == "8x12":
-        print("[INFO] Running GAN with a max diff of:", args.max_diff)
-        print("[INFO] Running GAN with model:", args.model)
+    if args.afp in model_dict:
+        print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afp)
+        print("[INFO] Running GAN with model:", model_dict[args.afp])
     else:
-        print("[ERROR] Invalid model set:", args.model)
+        print("[ERROR] Invalid model set:", args.afp)
         exit()
 
     print("[INFO] Pre-Processing Data...")
-    pre_processing.init()
+    pre_processing.init(args.afp)
 
     # load  data
     print("[INFO] Loading data...")
@@ -265,7 +254,7 @@ def main():
 
     # train
     print("[INFO] Training model...")
-    train_instances(labeled_dataset,unlabeled_dataset, args.model)
+    train_instances(labeled_dataset, unlabeled_dataset, net_model)
     print("[DONE] Finished.")
 
 if __name__ == '__main__':

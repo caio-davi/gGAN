@@ -190,7 +190,21 @@ def clear_folders():
             except Exception as e:
                 print(e)
 
-def init():
+def current_sampling(afp):
+    f_name = 'data/current'
+    f = open(f_name, "r")
+    if afp == f.readline():
+        return True
+    else:
+        f = open(f_name, "w")
+        f.write(afp)
+        return False
+
+def init(afp):
+
+    if current_sampling(afp):
+        return 
+
     # From Dengue Paper
     labeled_data = pd.read_csv('data/labeled.csv', header=0)
     diag = labeled_data['diagnose']
@@ -202,9 +216,8 @@ def init():
 
     labeled_data = labeled_data[unlabeled_data.columns]
 
-    MAX_DIFF = 0.21
-    # mask = pd.read_csv('./masks/max_diff_'+str(MAX_DIFF)+'.csv', index_col=None, header=None)
-    mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
+    mask = pd.read_csv('./data/masks/max_diff_'+str(afp)+'.csv', index_col=None, header=None)
+    # mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
 
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]

@@ -4,10 +4,8 @@ ADD requirements.txt requirements.txt
 
 RUN apt-get update
 
-RUN  apt-get install graphviz
-
 RUN python -m pip install -r requirements.txt 
 
-WORKDIR /workspace
+WORKDIR /workspace/src
 COPY . .
 EXPOSE 8888
