@@ -14,13 +14,13 @@ docker build . -t csce
 docker  run -it -v $PWD:/workspace csce bash
 ```
 
-After that your enviroument should be setted. You can run the gGAN using:
+After that your enviroument should be set. Navigate to the src/ directory. You can run the gGAN using:
 
 ```
 python gGAN.py 0.07
 ```
-This will run the gGAN with the max allelic frequency threshold of 0.07, you can run for help to know which are the availables thresholds. (Actually, the options are listed at the table in the next sectoin, under the column "Frequency Proximity").
-The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After run the gGAN the logs of test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some hard code into the file, as well.
+This will run the gGAN with the max allelic frequency threshold of 0.07, you can run `python gGAN.py -h` for help to know which are the availables thresholds. These options are listed at the table in the next section, under the column "Frequency Proximity".
+The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After running the gGAN model, the logs of test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some hard code into the file as well.
 
 ## Models
 
