@@ -64,8 +64,11 @@ def define_generator(latent_dim):
     # upsample to 6x8
     gen = Conv2DTranspose(128, (2,2), strides=(2,2), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
+    # upsample to 12x16
+    gen = Conv2DTranspose(128, (2,2), strides=(2,2), padding='same')(gen)
+    gen = LeakyReLU(alpha=0.2)(gen)
     # downsample to 3x4
-    gen = Conv2D(128, (2,2), strides=(2,2), padding='same')(gen)
+    gen = Conv2D(128, (2,2), strides=(4,4), padding='same')(gen)
     gen = LeakyReLU(alpha=0.2)(gen)
     # output
     out_layer = Conv2D(1, (2,2), activation='tanh', padding='same')(gen)
@@ -75,4 +78,4 @@ def define_generator(latent_dim):
 
 ##### plot the Generator
 # g_model = define_generator(100)
-# plot_model(g_model, to_file='./images/generator_plot_3x4.png', show_shapes=True, show_layer_names=True)
+# plot_model(g_model, to_file='./images/generator_plot_3x4_.png', show_shapes=True, show_layer_names=True)

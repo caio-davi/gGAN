@@ -171,10 +171,6 @@ def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_
     X, y = labeled_test_dataset
     predict_d = d_model.predict(X, verbose=0)
     predict_c = c_model.predict(X, verbose=0)
-    for i in range (len(predict_c)):
-        print(predict_c[i], predict_d[i])
-    print(same_model(d_model, c_model))
-    exit()
     able_to_predict = d_model.predict(X, verbose=0)
     mask = create_mask(able_to_predict)
     X = X[mask]
@@ -198,7 +194,7 @@ def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_
     return y.shape[0], loss, acc
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -222,7 +218,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i+1) % 100 == 0:
-            # labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            # labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
             # log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
             measured, loss, acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
             print(i, measured, loss, acc)
@@ -250,7 +246,7 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
         # relative size of the test data
         test_size = 0.2
         # train model
-        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
+        train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
         # uptade the log
         log = log + train_log
     log_name = path + 'test_'+datetime.now().isoformat()+'.log'
