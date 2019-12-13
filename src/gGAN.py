@@ -155,9 +155,40 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
         print('>Saved: %s and %s' % (filename1, filename2))
     return labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc
 
+def create_mask(arr):
+    mask = np.zeros(len(arr),dtype=bool)
+    for i in range(len(arr)):
+        if(arr[i][0] > 0.8):
+            mask[i] = True
+    return mask
+
+# generate samples and save as a plot and save the model
+def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, count, save_performance=False, n_samples=100):
+    X, y = labeled_test_dataset
+    able_to_predict = d_model.predict(X, verbose=0)
+    mask = create_mask(able_to_predict)
+    X = X[mask]
+    y = y[mask]
+    loss = 0
+    acc = 0 
+    if(X.shape[0]>0):
+        loss, acc = c_model.evaluate(X, y, verbose=0)
+    if(save_performance):
+        print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
+        # acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
+        new_path = path+'/'+'partial_'+str(count)+'/'
+        os.mkdir(new_path)
+        # save the generator model
+        filename1 = new_path + 'g_model_%04d.h5' % (step+1)
+        g_model.save(filename1)
+        # save the classifier model
+        filename2 = new_path + 'c_model_%04d.h5' % (step+1)
+        c_model.save(filename2)
+        print('>Saved: %s and %s' % (filename1, filename2))
+    return y.shape[0], loss, acc
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=200):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -180,9 +211,11 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # summarize loss on this batch
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
-        if (i+1) % (bat_per_epo * 1) == 0:
-            labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
-            log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
+        if (i+1) % 100 == 0:
+            # labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            # log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
+            measured, loss, acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            print(i, measured, loss, acc)
     return log
 
 def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
