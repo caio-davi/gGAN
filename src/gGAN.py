@@ -18,9 +18,13 @@ from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
 import argparse
-
 sys.path.insert(1, 'data/')
 import pre_processing
+
+
+# created to make sure that both discriminator models have the same wheights
+def same_model(a,b):
+    return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -158,13 +162,19 @@ def summarize_performance(step, g_model, d_model, c_model, latent_dim, labeled_t
 def create_mask(arr):
     mask = np.zeros(len(arr),dtype=bool)
     for i in range(len(arr)):
-        if(arr[i][0] > 0.8):
+        if(arr[i][0] > 0.5):
             mask[i] = True
     return mask
 
 # generate samples and save as a plot and save the model
 def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, count, save_performance=False, n_samples=100):
     X, y = labeled_test_dataset
+    predict_d = d_model.predict(X, verbose=0)
+    predict_c = c_model.predict(X, verbose=0)
+    for i in range (len(predict_c)):
+        print(predict_c[i], predict_d[i])
+    print(same_model(d_model, c_model))
+    exit()
     able_to_predict = d_model.predict(X, verbose=0)
     mask = create_mask(able_to_predict)
     X = X[mask]
