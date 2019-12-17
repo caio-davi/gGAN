@@ -125,27 +125,25 @@ def create_image(data):
     img.imshow(data.values, cmap='viridis')
     plt.savefig('../images/real_sample.png')
 
-# Create folder with our unlabeled data from 1000Genomes
-def create_unlabeled_db(unlabeled_data, dic):
-#    df = normilize_data(unlabeled_data)
+# Create unlabeled data 
+def create_unlabeled_db(unlabeled_data, dic, dim):
     df = map_dataframe(unlabeled_data, dic)
     print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
-        new = create_matrix(df.loc[i,])
-        new.to_csv('data/unlabeled/sample_'+str(i)+'.csv', index=False)
-    
-def create_labeled_db(labeled_data, diag, dic):
-#    df = normilize_data(labeled_data)
+        new = df.loc[i,] if dim == 1 else create_matrix(df.loc[i,])
+        new.to_csv('data/unlabeled/sample_'+str(i)+'.csv', index=False, header = False)
+
+# Create labeled data  
+def create_labeled_db(labeled_data, diag, dic, dim):
     df = map_dataframe(labeled_data, dic)
     print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
         if(diag[i] == 'DF'):
-            # create a matrix from df.loc since it gets the ith row
-            new = create_matrix(df.loc[i,])
-            new.to_csv('data/labeled/DF/sample_'+str(i)+'.csv', index=False)
+            new = df.loc[i,] if dim == 1 else create_matrix(df.loc[i,])
+            new.to_csv('data/labeled/DF/sample_'+str(i)+'.csv', index=False, header = False)
         if(diag[i] == 'SD'):
-            new = create_matrix(df.loc[i,])
-            new.to_csv('data/labeled/SD/sample_'+str(i)+'.csv', index=False)
+            new = df.loc[i,] if dim == 1 else create_matrix(df.loc[i,])
+            new.to_csv('data/labeled/SD/sample_'+str(i)+'.csv', index=False, header = False)
 
 def create_split_labeled_db(test_size=0.15):
     clear_folders()
@@ -200,10 +198,10 @@ def current_sampling(afp):
         f.write(afp)
         return False
 
-def init(afp):
+def init(afp, dim):
 
-    if current_sampling(afp):
-        return 
+    #if current_sampling(afp):
+    #   return 
 
     # From Dengue Paper
     labeled_data = pd.read_csv('data/labeled.csv', header=0)
@@ -229,7 +227,8 @@ def init(afp):
     create_folders()
 
     print("[INFO] Creating Labeled Sample Data...")
-    create_labeled_db(labeled_data, diag, dic)
+    create_labeled_db(labeled_data, diag, dic, dim)
     print("[INFO] Creating Unlabeled Sample Data...")
-    create_unlabeled_db(unlabeled_data, dic)
+    create_unlabeled_db(unlabeled_data, dic, dim)
+    exit()
     print("[DONE] Finished Pre-Processing Data")

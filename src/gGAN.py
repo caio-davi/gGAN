@@ -258,7 +258,7 @@ def main():
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument("afp", help="The threshold for the allelic freqeuncy proximity. Options are: 0.07, 0.10, 0.21")
-    #parser.add_argument("model", help="The model to use. Options are: 3x4, 5x5, 8x12")
+    parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
     model_dict = {
@@ -267,6 +267,8 @@ def main():
         '0.21' : '8x12',
     }
 
+    possible_dims = [1,2]
+
     # check model argument to make sure the right model is set if not then exit
     if args.afp in model_dict:
         print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afp)
@@ -274,6 +276,11 @@ def main():
     else:
         print("[ERROR] Invalid model set:", args.afp)
         exit()
+
+    if not (float(args.dim) in possible_dims):
+        print("[ERROR] Invalid Dimension option:", args.dim)
+        exit()
+
 
     net_models = ''
     if args.afp == '0.07':
@@ -284,7 +291,7 @@ def main():
         net_model = __import__('model_8x12', globals(), locals(), 0)
 
     print("[INFO] Pre-Processing Data...")
-    pre_processing.init(args.afp)
+    pre_processing.init(args.afp, args.dim)
 
     # load  data
     print("[INFO] Loading data...")
