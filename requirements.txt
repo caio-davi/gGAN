@@ -11,6 +11,7 @@ torch
 torchvision
 keras
 pydot
+graphviz
 #rasterio>=1.0a12
 #fiona
 #shapely

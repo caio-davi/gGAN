@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib.pylab import plt
+from sys import exit
 
 def split_instances(data):
     instances = []
@@ -17,11 +18,11 @@ def split_instances(data):
 
 #Just for one instance
 def plot_metrics(name, data):
-    metrics = ['labeled_loss','labeled_acc','unlabeled_loss','unlabeled_acc']
-    for metric in metrics:
-        plt.plot(data[metric], label=metric)
+#    for metric in data.columns:
+    for i in range(2, len(data.columns)-1):
+        plt.plot(data[data.columns[i]], label=data.columns[i])
     plt.legend()
-    plt.savefig(name+'.png')
+    plt.savefig('./run/'+name+'.png')
     
 def pretty_plot_metrics(name, data):
     plt.plot(data['labeled_acc'], '-', color='b', label='Labeled Accuracy')
@@ -74,12 +75,14 @@ def save_plot(name, data):
     plt.savefig(name+'.png')
 
 path = './run/'
-file_name = 'dengue_paper'
+file_name = 'test_model_2_007'
 full_name = path+file_name
 data = pd.read_csv(full_name+'.log')
+
 
 
 # save_plot(full_name, data)
 # pretty_plot_metrics(full_name, data)
 # pretty_plot_compare3_acc('comparing_acc')
-pretty_plot_compare3_loss('comparing_loss')
+# pretty_plot_compare3_loss('comparing_loss')
+plot_metrics(file_name, data)

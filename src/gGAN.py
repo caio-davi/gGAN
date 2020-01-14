@@ -41,14 +41,19 @@ def define_gan(g_model, d_model):
 
 def load_from_directory(path):
     files = os.listdir(path)
-    X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",", skiprows=1)
-    rows_size, columns_size = X.shape
+    X = loadtxt(open(path+"/"+ files[0], "rb"), delimiter=",")
+    vector_size = X.shape[0]
+    if len(X.shape) > 1:
+        rows_size, columns_size = X.shape
     # get samples
     for i  in range(1, len(files)):
-        new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",", skiprows=1)
+        new = loadtxt(open(path+"/"+ files[i], "rb"), delimiter=",")
         X = append(X, new, axis =0)
     # reshape the ndarray
-    X = X.reshape(len(files),rows_size,columns_size)
+    if len(X.shape) > 1:
+        X = X.reshape(len(files),rows_size,columns_size)
+    else:
+        X = X.reshape(len(files),vector_size)
     # expand dimension 
     X = expand_dims(X, axis=-1)
     # convert from ints to floats
@@ -194,7 +199,7 @@ def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_
     return y.shape[0], loss, acc
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=200, n_batch=200):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=100):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -207,7 +212,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
         # update unsupervised discriminator (d)
-        [X_real, y_real] = select_unsupervised_samples(unlabeled_train_dataset)
+        [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
         X_fake, y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
         d_loss2 = d_model.train_on_batch(X_fake, y_fake)
@@ -221,6 +226,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             # labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
             # log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
             measured, loss, acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            log = log + str(i+1)+','+str(measured)+','+str(loss)+','+str(acc)+','+'\n'
             print(i, measured, loss, acc)
     return log
 
@@ -249,7 +255,8 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
         train_log = train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, i)
         # uptade the log
         log = log + train_log
-    log_name = path + 'test_'+datetime.now().isoformat()+'.log'
+    model_name = str(net_model).split()[1]
+    log_name = path + 'test_'+model_name+'_'+datetime.now().isoformat()+'.log'
     log_file = open(log_name, "w")
     log_file.write(log)
     log_file.close()
@@ -261,36 +268,25 @@ def main():
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
-    model_dict = {
-        '0.07' : '3x4',
-        '0.10' : '5x5',
-        '0.21' : '8x12',
-    }
-
-    possible_dims = [1,2]
+    enabled_models = ['0.07', '0.10', '0.21']
+    enabled_dims = [1,2]
 
     # check model argument to make sure the right model is set if not then exit
-    if args.afp in model_dict:
+    if args.afp in enabled_models:
         print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afp)
-        print("[INFO] Running GAN with model:", model_dict[args.afp])
     else:
         print("[ERROR] Invalid model set:", args.afp)
         exit()
 
-    if not (float(args.dim) in possible_dims):
+    if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
         exit()
 
-
-    net_models = ''
-    if args.afp == '0.07':
-        net_model = __import__('model_3x4', globals(), locals(), 0)
-    elif args.afp == '0.10':
-        net_model = __import__('model_5x5', globals(), locals(), 0)
-    elif args.afp == '0.21':
-        net_model = __import__('model_8x12', globals(), locals(), 0)
+    afp = args.afp.replace(".", "")
+    net_model = __import__('model_'+args.dim+'_'+afp, globals(), locals(), 0)
 
     print("[INFO] Pre-Processing Data...")
+    print("[INFO] Dimensions: ", args.dim)
     pre_processing.init(args.afp, args.dim)
 
     # load  data

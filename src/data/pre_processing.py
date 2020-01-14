@@ -201,7 +201,9 @@ def current_sampling(afp):
 def init(afp, dim):
 
     #if current_sampling(afp):
-    #   return 
+    #return
+
+    dim = float(dim)
 
     # From Dengue Paper
     labeled_data = pd.read_csv('data/labeled.csv', header=0)
@@ -230,5 +232,4 @@ def init(afp, dim):
     create_labeled_db(labeled_data, diag, dic, dim)
     print("[INFO] Creating Unlabeled Sample Data...")
     create_unlabeled_db(unlabeled_data, dic, dim)
-    exit()
     print("[DONE] Finished Pre-Processing Data")
