@@ -30,7 +30,7 @@ def same_model(a,b):
 def define_gan(g_model, d_model):
     # make weights in the discriminator not trainable
     d_model.trainable = False
-    # connect image output from generator as input to discriminator
+    # connect the output from generator as input to discriminator
     gan_output = d_model(g_model.output)
     # define gan model as taking noise and outputting a classification
     model = Model(g_model.input, gan_output)
@@ -172,12 +172,11 @@ def create_mask(arr):
     return mask
 
 # generate samples and save as a plot and save the model
-def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, count, save_performance=False, n_samples=100):
+def summarize_performance_(step, g_model, d_model, c_model, labeled_test_dataset, path, count, save_performance=False):
     X, y = labeled_test_dataset
     predict_d = d_model.predict(X, verbose=0)
     predict_c = c_model.predict(X, verbose=0)
-    able_to_predict = d_model.predict(X, verbose=0)
-    mask = create_mask(able_to_predict)
+    mask = create_mask(predict_d)
     X = X[mask]
     y = y[mask]
     loss = 0
@@ -198,6 +197,7 @@ def summarize_performance_(step, g_model, d_model, c_model, latent_dim, labeled_
         print('>Saved: %s and %s' % (filename1, filename2))
     return y.shape[0], loss, acc
 
+
 # train the generator and discriminator
 def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=100):
     # calculate the number of batches per training epoch
@@ -209,10 +209,13 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
     log = ''
     for i in range(n_steps):
         # update supervised discriminator (c)
-        [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset)
+        [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset, n_samples=20)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
+        
+
+        
         # update unsupervised discriminator (d)
-        [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset)
+        [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset, n_samples=half_batch)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
         X_fake, y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
         d_loss2 = d_model.train_on_batch(X_fake, y_fake)
@@ -223,11 +226,11 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i+1) % 100 == 0:
-            # labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
-            # log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
-            measured, loss, acc = summarize_performance_(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
-            log = log + str(i+1)+','+str(measured)+','+str(loss)+','+str(acc)+','+'\n'
-            print(i, measured, loss, acc)
+            labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(i, g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1)
+            log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc)+'\n'
+            measured, loss, acc = summarize_performance_(i, g_model, d_model, c_model, labeled_test_dataset, path, log)
+            print(labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',measured, loss, acc)
+        #     log = log + str(i+1)+','+str(measured)+','+str(loss)+','+str(acc)+','+'\n'
     return log
 
 def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
