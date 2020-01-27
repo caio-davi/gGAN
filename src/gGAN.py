@@ -209,11 +209,8 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
     log = ''
     for i in range(n_steps):
         # update supervised discriminator (c)
-        [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset, n_samples=20)
+        [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset, n_samples=10)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
-        
-
-        
         # update unsupervised discriminator (d)
         [X_real, y_real] = select_unsupervised_samples(unlabeled_dataset, n_samples=half_batch)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
