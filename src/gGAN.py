@@ -264,7 +264,7 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
 def main():
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("afp", help="The threshold for the allelic freqeuncy proximity. Options are: 0.07, 0.10, 0.21")
+    parser.add_argument("afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21")
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
@@ -272,22 +272,22 @@ def main():
     enabled_dims = [1,2]
 
     # check model argument to make sure the right model is set if not then exit
-    if args.afp in enabled_models:
-        print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afp)
+    if args.afd in enabled_models:
+        print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afd)
     else:
-        print("[ERROR] Invalid model set:", args.afp)
+        print("[ERROR] Invalid model set:", args.afd)
         exit()
 
     if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
         exit()
 
-    afp = args.afp.replace(".", "")
-    net_model = __import__('model_'+args.dim+'_'+afp, globals(), locals(), 0)
+    afd = args.afd.replace(".", "")
+    net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
 
     print("[INFO] Pre-Processing Data...")
     print("[INFO] Dimensions: ", args.dim)
-    pre_processing.init(args.afp, args.dim)
+    pre_processing.init(args.afd, args.dim)
 
     # load  data
     print("[INFO] Loading data...")

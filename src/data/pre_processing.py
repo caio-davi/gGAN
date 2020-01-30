@@ -216,8 +216,8 @@ def init(afp, dim):
 
     labeled_data = labeled_data[unlabeled_data.columns]
 
-    # mask = pd.read_csv('./data/masks/max_diff_'+str(afp)+'.csv', index_col=None, header=None)
-    mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
+    mask = pd.read_csv('./data/masks/max_diff_'+str(afp)+'.csv', index_col=None, header=None)
+    # mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
 
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]

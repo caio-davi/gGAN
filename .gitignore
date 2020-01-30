@@ -4,3 +4,4 @@ src/data/labeled/*
 src/data/unlabeled/*
 src/run/*
 OLD_try/*
+src/images/*
