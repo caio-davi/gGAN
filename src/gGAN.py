@@ -174,6 +174,7 @@ def create_mask(arr):
 # generate samples and save as a plot and save the model
 def summarize_performance_(step, g_model, d_model, c_model, labeled_test_dataset, path, count, save_performance=False):
     X, y = labeled_test_dataset
+    n_tests = y.shape[0]
     predict_d = d_model.predict(X, verbose=0)
     predict_c = c_model.predict(X, verbose=0)
     mask = create_mask(predict_d)
@@ -181,6 +182,7 @@ def summarize_performance_(step, g_model, d_model, c_model, labeled_test_dataset
     y = y[mask]
     loss = 0
     acc = 0 
+    unsup_acc = y.shape[0]/n_tests
     if(X.shape[0]>0):
         loss, acc = c_model.evaluate(X, y, verbose=0)
     if(save_performance):
@@ -195,7 +197,7 @@ def summarize_performance_(step, g_model, d_model, c_model, labeled_test_dataset
         filename2 = new_path + 'c_model_%04d.h5' % (step+1)
         c_model.save(filename2)
         print('>Saved: %s and %s' % (filename1, filename2))
-    return y.shape[0], loss, acc
+    return unsup_acc , loss, acc
 
 
 # train the generator and discriminator
@@ -268,7 +270,7 @@ def main():
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
-    enabled_models = ['0.07', '0.10', '0.21']
+    enabled_models = ['0.07', '0.10', '0.21', 'hybrid', 'SVM']
     enabled_dims = [1,2]
 
     # check model argument to make sure the right model is set if not then exit
@@ -283,7 +285,10 @@ def main():
         exit()
 
     afd = args.afd.replace(".", "")
-    net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
+    if(str(afd) == 'SVM'):
+        net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
+    else:
+        net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
 
     print("[INFO] Pre-Processing Data...")
     print("[INFO] Dimensions: ", args.dim)

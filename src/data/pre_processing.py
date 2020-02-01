@@ -198,7 +198,7 @@ def current_sampling(afp):
         f.write(afp)
         return False
 
-def init(afp, dim):
+def init(afd, dim):
 
     #if current_sampling(afp):
     #return
@@ -216,8 +216,12 @@ def init(afp, dim):
 
     labeled_data = labeled_data[unlabeled_data.columns]
 
-    mask = pd.read_csv('./data/masks/max_diff_'+str(afp)+'.csv', index_col=None, header=None)
-    # mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
+    if(str(afd) == 'SVM'):
+        mask = pd.read_csv('data/masks/dengue_paper.csv', index_col=None, header=None)
+    elif(str(afd) == 'hybrid'):
+        mask = pd.read_csv('data/masks/hybrid.csv', index_col=None, header=None)
+    else:
+        mask = pd.read_csv('./data/masks/max_diff_'+str(afd)+'.csv', index_col=None, header=None)
 
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]
