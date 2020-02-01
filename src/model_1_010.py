@@ -48,24 +48,43 @@ def define_discriminator(in_shape=(25,1), n_classes=2):
 # plot_model(d_model, to_file='./images/discriminator2_5x5_plot.png', show_shapes=True, show_layer_names=True)
 
 # define the standalone generator model
+# def define_generator(latent_dim):
+#     # sample generator input
+#     in_lat = Input(shape=(latent_dim,))
+#     # foundation for 5x5 sample
+#     n_nodes = 100 * 1
+#     gen = Dense(n_nodes)(in_lat)
+#     gen = LeakyReLU(alpha=0.2)(gen)
+#     gen = Reshape((1, 100))(gen)
+#     # upsample to 2x2
+#     gen = UpSampling1D(size=25)(gen)
+#     gen = Conv1D(100, (3), strides=(5), padding='same')(gen)
+#     gen = LeakyReLU(alpha=0.2)(gen)
+
+#     gen = UpSampling1D(size=10)(gen)
+#     gen = Conv1D(100, (5), strides=(2), padding='same')(gen)
+#     gen = LeakyReLU(alpha=0.2)(gen)
+#     # output
+#     out_layer = Conv1D(1, (2), activation='tanh', padding='same')(gen)
+#     # define model
+#     model = Model(in_lat, out_layer)
+#     return model
+
 def define_generator(latent_dim):
-    # sample generator input
+    # image generator input
     in_lat = Input(shape=(latent_dim,))
-    # foundation for 5x5 sample
+    # foundation for 3x4 sample
     n_nodes = 100 * 1
     gen = Dense(n_nodes)(in_lat)
-    gen = LeakyReLU(alpha=0.2)(gen)
-    gen = Reshape((1, 100))(gen)
-    # upsample to 2x2
-    gen = UpSampling1D(size=25)(gen)
-    gen = Conv1D(100, (3), strides=(5), padding='same')(gen)
-    gen = LeakyReLU(alpha=0.2)(gen)
+    gen = Dense(50, activation='relu')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(100, activation='relu')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(25, activation='sigmoid')(gen)
 
-    gen = UpSampling1D(size=10)(gen)
-    gen = Conv1D(100, (5), strides=(2), padding='same')(gen)
-    gen = LeakyReLU(alpha=0.2)(gen)
+    out_layer = Reshape((25, 1))(gen)
+ 
     # output
-    out_layer = Conv1D(1, (2), activation='tanh', padding='same')(gen)
     # define model
     model = Model(in_lat, out_layer)
     return model

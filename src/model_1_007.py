@@ -63,7 +63,6 @@ def define_discriminator(in_shape=(12,1), n_classes=2):
     fe = Flatten()(fe)
     # dropout
     fe = Dropout(0.2)(fe)
-    c_fe = Dense(n_classes, activation='relu')(fe)
     # supervised output
     c_out_layer = Dense(1, activation='sigmoid')(fe)
     # define and compile supervised discriminator model
@@ -116,7 +115,7 @@ def define_generator(latent_dim):
     gen = UpSampling1D(size=2)(gen)
     gen = Dense(48, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
-    gen = Dense(12, activation='relu')(gen)
+    gen = Dense(12, activation='sigmoid')(gen)
 
     out_layer = Reshape((12, 1))(gen)
  
