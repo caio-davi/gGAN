@@ -200,8 +200,8 @@ def current_sampling(afp):
 
 def init(afd, dim):
 
-    #if current_sampling(afp):
-    #return
+    if current_sampling(afd):
+        return
 
     dim = float(dim)
 

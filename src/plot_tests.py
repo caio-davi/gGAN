@@ -3,6 +3,8 @@ import pandas as pd
 from matplotlib.pylab import plt
 from sys import exit
 
+header =['instance','step','labeled_loss','labeled_acc','unlabeled_loss','unlabeled_acc','app_t2','loss_t2','acc_t2']
+
 def split_instances(data):
     instances = []
     index = 0
@@ -20,9 +22,11 @@ def split_instances(data):
 def plot_metrics(name, data):
 #    for metric in data.columns:
     for i in range(2, len(data.columns)-1):
+        plt.ylim([0,1])
         plt.plot(data[data.columns[i]], label=data.columns[i])
-    plt.legend()
-    plt.savefig('./run/'+name+'.png')
+        plt.savefig('./run/'+name+data.columns[i]+'.png')
+        plt.clf()
+    # plt.legend()
     
 def pretty_plot_metrics(name, data):
     plt.plot(data['labeled_acc'], '-', color='b', label='Labeled Accuracy')
@@ -68,14 +72,22 @@ def pretty_plot_compare3_loss(name):
     # plt.legend()
     plt.savefig(name+'.png')
 
-def save_plot(name, data):
-    instances = split_instances(data)
-    for i in range(len(instances)):
-        plt.plot(instances[i])
-    plt.savefig(name+'.png')
+# def save_plot(name, data):
+#     instances = split_instances(data)
+#     for i in range(len(instances)):
+#         plt.plot(instances[i])
+#         plt.savefig(name+'_'+header[i]+'.png')
 
-path = './run/'
-file_name = 'test_model_2_007'
+def save_plot(name, data):
+    metrics = data.columns
+    for metric in metrics:
+        plt.plot([data[metric]])
+        plt.savefig(name+'_'+metric+'.png')
+        
+
+
+path = '../backups/Model_SVM/'
+file_name = 'test_\'model_SVM\'_2020-02-03T22:38:00.223495'
 full_name = path+file_name
 data = pd.read_csv(full_name+'.log')
 
@@ -85,4 +97,5 @@ data = pd.read_csv(full_name+'.log')
 # pretty_plot_metrics(full_name, data)
 # pretty_plot_compare3_acc('comparing_acc')
 # pretty_plot_compare3_loss('comparing_loss')
+print('save in : ', file_name )
 plot_metrics(file_name, data)
