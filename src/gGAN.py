@@ -139,10 +139,11 @@ def generate_fake_samples(generator, latent_dim, n_samples):
 
 def generate_unsupervised_test_dataset(g_model, latent_dim, X_real):
     y_real = ones((X_real.shape[0], 1))
-    X_fake, y_fake = generate_fake_samples(g_model, latent_dim, X_real.shape[0])
-    X = append(X_fake, X_real, axis=0)
-    y = append(y_fake, y_real, axis=0)
-    return X, y 
+    return X_real, y_real
+    # X_fake, y_fake = generate_fake_samples(g_model, latent_dim, X_real.shape[0])
+    # X = append(X_fake, X_real, axis=0)
+    # y = append(y_fake, y_real, axis=0)
+    # return X, y 
 
 # generate samples and save as a plot and save the model
 def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, step, save_performance=False, n_samples=100):
@@ -252,7 +253,7 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
 def main():
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21")
+    parser.add_argument("afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21, SVM")
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
@@ -261,7 +262,7 @@ def main():
 
     # check model argument to make sure the right model is set if not then exit
     if args.afd in enabled_models:
-        print("[INFO] Running GAN with a max allelic freqeuncy proximity of:", args.afd)
+        print("[INFO] Running GAN with a max allelic frequency proximity of:", args.afd)
     else:
         print("[ERROR] Invalid model set:", args.afd)
         exit()
