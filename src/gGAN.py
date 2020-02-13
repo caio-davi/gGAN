@@ -157,11 +157,14 @@ def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_da
         new_path = path+'/'+'partial_'+str(step)+'/'
         os.mkdir(new_path)
         # save the generator model
-        filename1 = new_path + 'g_model_%04d.h5' % (step+1)
+        filename1 = new_path + 'g_model.h5'
         g_model.save(filename1)
         # save the classifier model
-        filename2 = new_path + 'c_model_%04d.h5' % (step+1)
+        filename2 = new_path + 'c_model.h5'
         c_model.save(filename2)
+        filename3 = new_path + 'd_model.h5'
+        d_model.save(filename3)
+        print('saved: ', filename1)
     return labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc
 
 def create_mask(arr):
@@ -171,7 +174,6 @@ def create_mask(arr):
             mask[i] = True
     return mask
 
-# generate samples and save as a plot and save the model
 def summarize_performance_t2(d_model, c_model, labeled_test_dataset):
     X, y = labeled_test_dataset
     n_tests = y.shape[0]
@@ -257,7 +259,7 @@ def main():
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     args = parser.parse_args()
     
-    enabled_models = ['0.07', '0.10', '0.21', 'hybrid', 'SVM']
+    enabled_models = ['0.07', '0.10', '0.21', 'SVM']
     enabled_dims = [1,2]
 
     # check model argument to make sure the right model is set if not then exit
@@ -272,6 +274,9 @@ def main():
         exit()
 
     afd = args.afd.replace(".", "")
+    
+    sys.path.insert(1, '/workspace/src/models')
+
     if(str(afd) == 'SVM'):
         net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
     else:

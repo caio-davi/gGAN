@@ -6,3 +6,5 @@ src/run/*
 OLD_try/*
 src/images/*
 src/__pycache__/*
+backups/*
+.vscode/*
