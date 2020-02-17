@@ -164,7 +164,6 @@ def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_da
         c_model.save(filename2)
         filename3 = new_path + 'd_model.h5'
         d_model.save(filename3)
-        print('saved: ', filename1)
     return labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc
 
 def create_mask(arr):
@@ -188,6 +187,11 @@ def summarize_performance_t2(d_model, c_model, labeled_test_dataset):
         loss, acc = c_model.evaluate(X, y, verbose=0)
     return unsup_acc , loss, acc
 
+def summarize_performance_t3(d_model, g_model, size = 200):
+    generated, labels = generate_fake_samples(g_model, 100, size)
+    predict_d = d_model.predict(generated, verbose=0)
+    count = sum(predict_d>0.5)
+    return count/size
 
 # train the generator and discriminator
 def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=100):
@@ -216,8 +220,10 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         if (i+1) % 100 == 0:
             labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1, save_performance=True)
             t2_measured, t2_loss, t2_acc = summarize_performance_t2(d_model, c_model, labeled_test_dataset)
-            log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)+'\n'
-            print(labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc)
+            log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
+            t3_acc = summarize_performance_t3(d_model, g_model)
+            log = log + ' | ' + str(t3_acc)+'\n'
+            print(str(i+1), labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc, ' | ', t3_acc)
     return log
 
 def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
