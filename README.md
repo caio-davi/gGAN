@@ -7,11 +7,11 @@ You can find the paper for the project [here](https://www.overleaf.com/project/5
 
 ## Getting Started
 
-Just build and run the `csce` docker container:
+Just build and run the `ggan` docker container:
 
 ```
-docker build . -t csce
-docker  run -it -v $PWD:/workspace csce bash
+docker build . -t ggan
+docker  run -it -v $PWD:/gGAN ggan bash
 ```
 
 After that, your environment should be set. Navigate to the src/ directory. You can run the gGAN using:

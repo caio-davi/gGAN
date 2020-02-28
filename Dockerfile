@@ -10,6 +10,6 @@ RUN pip install --upgrade pip
 
 RUN python -m pip install -r requirements.txt 
 
-WORKDIR /workspace/src
+WORKDIR /gGAN
 COPY . .
 EXPOSE 8888
