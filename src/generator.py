@@ -47,5 +47,5 @@ print(len(sd_samples))
 print(len(df_samples))
 
 
-os.makedirs('./synthetic_data/labeled/DF', exist_ok=True)
-os.makedirs('./synthetic_data/labeled/SD', exist_ok=True)
+os.makedirs('./data/synthetic_data/labeled/DF', exist_ok=True)
+os.makedirs('./data/synthetic_data/labeled/SD', exist_ok=True)

@@ -281,7 +281,7 @@ def main():
 
     afd = args.afd.replace(".", "")
     
-    sys.path.insert(1, '/workspace/src/models')
+    sys.path.insert(1, '/gGAN/src/models')
 
     if(str(afd) == 'SVM'):
         net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
