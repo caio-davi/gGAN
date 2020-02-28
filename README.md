@@ -11,7 +11,7 @@ Just build and run the `ggan` docker container:
 
 ```
 docker build . -t ggan
-docker  run -it -v $PWD:/gGAN ggan bash
+docker run -it -v $PWD:/gGAN ggan bash
 ```
 
 After that, your environment should be set. Navigate to the src/ directory. You can run the gGAN using:

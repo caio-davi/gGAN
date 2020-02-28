@@ -167,17 +167,11 @@ def create_split_labeled_db(test_size=0.15):
             else:
                 new.to_csv('data/labeled/training/SD/sample_'+str(i)+'.csv')
 
-def create_folders():
-    os.makedirs('data/labeled/training/SD', exist_ok=True)
-    os.makedirs('data/labeled/training/DF', exist_ok=True)
-    os.makedirs('data/labeled/test/SD', exist_ok=True)
-    os.makedirs('data/labeled/test/DF', exist_ok=True)
-    os.makedirs('data/labeled/DF', exist_ok=True)
-    os.makedirs('data/labeled/SD', exist_ok=True)
-    os.makedirs('data/unlabeled', exist_ok=True)
+def create_folders(folders):
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
             
-def clear_folders():
-    folders = ['data/labeled/test/DF','data/labeled/test/SD', 'data/labeled/training/DF', 'data/labeled/training/SD' ] 
+def clear_folders(folders):
     for folder in folders:
         for the_file in os.listdir(folder):
             file_path = os.path.join(folder, the_file)
@@ -230,7 +224,9 @@ def init(afd, dim):
 
     # clear folders and recreate them
     # clear_folders() # issue with clearing folders since they may not exist on the first run
-    create_folders()
+    folders = ['data/labeled/test/DF','data/labeled/test/SD', 'data/labeled/training/DF', 'data/labeled/training/SD' ] 
+    create_folders(folders)
+    clear_folders(folders)
 
     print("[INFO] Creating Labeled Sample Data...")
     create_labeled_db(labeled_data, diag, dic, dim)

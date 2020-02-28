@@ -5,7 +5,24 @@ from numpy import sum
 from numpy import array
 from numpy import reshape
 from numpy.random import randn
+import pandas as pd
 import os
+
+
+def create_folders(folders):
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
+            
+def clear_folders(folders):
+    for folder in folders:
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                print(e)
  
 # load model
 c_model = load_model('../backups/Model_SVM/c_model.h5')
@@ -38,14 +55,23 @@ i = 0
 while len(sd_samples) < 500:
     if(predict_d[i]>0.5):
         if(predict_c[i]>0.5):
-            sd_samples.append(generated[i])
+            new_sample = pd.DataFrame(data=generated[i])
+            sd_samples.append(new_sample)
         else:
-            df_samples.append(generated[i])
+            new_sample = pd.DataFrame(data=generated[i])
+            df_samples.append(new_sample)
     i = i +1
 
 print(len(sd_samples))
 print(len(df_samples))
 
+folders = ['./data/synthetic_data/labeled/DF', './data/synthetic_data/labeled/SD'] 
 
-os.makedirs('./data/synthetic_data/labeled/DF', exist_ok=True)
-os.makedirs('./data/synthetic_data/labeled/SD', exist_ok=True)
+create_folders(folders)
+clear_folders(folders)
+
+for i in range(len(sd_samples)):
+    sd_samples[i].to_csv('./data/synthetic_data/labeled/SD/sample_'+str(i)+'.csv', index=False, header = False)
+
+for i in range(len(df_samples)):
+    df_samples[i].to_csv('./data/synthetic_data/labeled/DF/sample_'+str(i)+'.csv', index=False, header = False)
