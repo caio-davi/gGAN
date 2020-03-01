@@ -3,7 +3,7 @@
 src/data/labeled/*
 src/data/current
 src/data/unlabeled/*
-src/data/synthetic_data/*
+src/data/synthetic/*
 src/run/*
 OLD_try/*
 src/images/*

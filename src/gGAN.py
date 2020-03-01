@@ -61,9 +61,9 @@ def load_from_directory(path):
     return X
 
 # load the labeled data
-def load_real_labeled_samples():
-    X_0 = load_from_directory('./data/labeled/DF')
-    X_1 = load_from_directory('./data/labeled/SD')
+def load_real_labeled_samples(path):
+    X_0 = load_from_directory(path+'/DF')
+    X_1 = load_from_directory(path+'/SD')
     return [X_0, X_1]
 
 # load the unlabeled data
@@ -263,8 +263,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21, SVM")
     parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
+    parser.add_argument("--syn", type=bool, help="Run training+test with synthetic data.")
     args = parser.parse_args()
-    
+
     enabled_models = ['0.07', '0.10', '0.21', 'SVM']
     enabled_dims = [1,2]
 
@@ -278,7 +279,7 @@ def main():
     if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
         exit()
-
+    
     afd = args.afd.replace(".", "")
     
     sys.path.insert(1, '/gGAN/src/models')
@@ -288,13 +289,23 @@ def main():
     else:
         net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
 
-    print("[INFO] Pre-Processing Data...")
-    print("[INFO] Dimensions: ", args.dim)
-    pre_processing.init(args.afd, args.dim)
 
-    # load  data
-    print("[INFO] Loading data...")
-    labeled_dataset = load_real_labeled_samples()
+    if(args.syn):
+        if(not pre_processing.check_current_sampling(afd)):
+            print("[ERROR] Current synthetic data doesn't match [afd] option.", args.dim)
+            exit()
+
+        print("[INFO] Loading synthetic labeled data...")    
+        labeled_dataset = load_real_labeled_samples('./data/synthetic/labeled')
+    else:
+        print("[INFO] Pre-Processing Data...")
+        print("[INFO] Dimensions: ", args.dim)
+        pre_processing.init(args.afd, args.dim)
+
+        print("[INFO] Loading original labeled data...")
+        labeled_dataset = load_real_labeled_samples('./data/labeled')
+    
+    print("[INFO] Loading original unlabeled data...")
     unlabeled_dataset = load_real_unlabeled_samples()
 
     # train

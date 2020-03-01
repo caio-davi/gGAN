@@ -182,14 +182,22 @@ def clear_folders(folders):
             except Exception as e:
                 print(e)
 
-def current_sampling(afp):
+def check_current_sampling(afd):
     f_name = 'data/current'
     f = open(f_name, "r")
-    if afp == f.readline():
+    if afd == f.readline():
         return True
     else:
+        return False
+
+def current_sampling(afd):
+    current = check_current_sampling(afd)
+    if current:
+        return True
+    else:
+        f_name = 'data/current'
         f = open(f_name, "w")
-        f.write(afp)
+        f.write(afd)
         return False
 
 def init(afd, dim):

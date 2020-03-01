@@ -62,16 +62,13 @@ while len(sd_samples) < 500:
             df_samples.append(new_sample)
     i = i +1
 
-print(len(sd_samples))
-print(len(df_samples))
-
-folders = ['./data/synthetic_data/labeled/DF', './data/synthetic_data/labeled/SD'] 
+folders = ['./data/synthetic/labeled/DF', './data/synthetic/labeled/SD'] 
 
 create_folders(folders)
 clear_folders(folders)
 
-for i in range(len(sd_samples)):
-    sd_samples[i].to_csv('./data/synthetic_data/labeled/SD/sample_'+str(i)+'.csv', index=False, header = False)
-
 for i in range(len(df_samples)):
-    df_samples[i].to_csv('./data/synthetic_data/labeled/DF/sample_'+str(i)+'.csv', index=False, header = False)
+    df_samples[i].to_csv(folders[0]+str(i)+'.csv', index=False, header = False)
+
+for i in range(len(sd_samples)):
+    sd_samples[i].to_csv(folders[1]+str(i)+'.csv', index=False, header = False)
