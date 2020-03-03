@@ -231,6 +231,8 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
     # path to save logs, performances and fake samples files
     path = './run/' + 'test_'+model_name+'_'+datetime.now().isoformat()
     os.mkdir(path)
+    print("[INFO] Labeled Dataset size: ", len(labeled_dataset[0])+len(labeled_dataset[1])) 
+    print("[INFO] Unlabeled Dataset size: ", len(unlabeled_dataset)) 
     # log summary
     log = ''
     log = log + 'instance,step,labeled_loss,labeled_acc,unlabeled_loss,unlabeled_acc\n'

@@ -3,13 +3,12 @@
 Creating large datasets for genetically influenced diseases is a hard and expensive task.
 We intend to use the idea behind Generative Adversarial Networks to artificially create cohesive labeled genetic data to characterize genetically influenced diseases, specifically Dengue.
 
-You can find the paper for the project [here](https://www.overleaf.com/project/5d8555ac21df820001d176ac).
 
 ## Getting Started
 
 Just build and run the `ggan` docker container:
 
-```
+```BASH 
 docker build . -t ggan
 docker run -it -v $PWD:/gGAN ggan bash
 ```
@@ -17,21 +16,27 @@ docker run -it -v $PWD:/gGAN ggan bash
 After that, your environment should be set. Navigate to the src/ directory. You can run the gGAN using:
 
 ```
-python gGAN.py 0.07
+python gGAN.py
 ```
-This will run the gGAN with the max allelic frequency threshold of 0.07, you can run `python gGAN.py -h` for help to know which are the available thresholds. These options are listed at the table in the next section, under the column "Frequency Proximity".
-The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After running the gGAN model, the logs of the test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some hard code into the file as well.
+Notice that is several parameters to run the Genetic GAN, bellow is the output of the help message:
 
-## Models
+```
+$ python gGAN.py -h
+usage: gGAN.py [-h] [--syn SYN] afd dim
 
-We have diferent models for different samples sizes. 
+positional arguments:
+  afd         The threshold for the Allelic Freqeuncy Distance. Options are:
+              0.07, 0.10, 0.21, SVM
+  dim         Number of dimensions of the formated sample. Options are: 1
+              (Conv1D) or 2 (Conv2D)
 
-| Model     | Frequency Proximity | #n SNPs | Sample Dimensions |
-| --------- | ------------------- | ------- | ----------------- |
-| gGan_3x4  | 0.07                | 12      | 3x4               |
-| gGan_5x5  | 0.10                | 25      | 5x5               |
-| gGan_8x12 | 0.21                | 96      | 8x12              |
+optional arguments:
+  -h, --help  show this help message and exit
+  --syn SYN   Run training+test with synthetic data.
 
+```
+
+The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After running the gGAN model, the logs of the test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some changes into the code as well.
 
 ## Related Researches
 

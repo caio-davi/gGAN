@@ -62,7 +62,7 @@ while len(sd_samples) < 500:
             df_samples.append(new_sample)
     i = i +1
 
-folders = ['./data/synthetic/labeled/DF', './data/synthetic/labeled/SD'] 
+folders = ['./data/synthetic/labeled/DF/', './data/synthetic/labeled/SD/'] 
 
 create_folders(folders)
 clear_folders(folders)
