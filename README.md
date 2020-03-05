@@ -18,7 +18,7 @@ After that, your environment should be set. Navigate to the src/ directory. You 
 ```
 python gGAN.py
 ```
-Notice that is several parameters to run the Genetic GAN, bellow is the output of the help message:
+Notice that are several parameters to run the Genetic GAN, bellow is the output of the help message:
 
 ```
 $ python gGAN.py -h
