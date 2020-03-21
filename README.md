@@ -3,36 +3,38 @@
 Creating large datasets for genetically influenced diseases is a hard and expensive task.
 We intend to use the idea behind Generative Adversarial Networks to artificially create cohesive labeled genetic data to characterize genetically influenced diseases, specifically Dengue.
 
-
 ## Getting Started
 
 Just build and run the `ggan` docker container:
 
-```BASH 
+```BASH
 docker build . -t ggan
 docker run -it -v $PWD:/gGAN ggan bash
 ```
 
 After that, your environment should be set. Navigate to the src/ directory. You can run the gGAN using:
 
+```BASH
+gGAN.py
 ```
-python gGAN.py
-```
+
 Notice that are several parameters to run the Genetic GAN, bellow is the output of the help message:
 
-```
-$ python gGAN.py -h
-usage: gGAN.py [-h] [--syn SYN] afd dim
+```BASH
+gGAN.py --help
+usage: gGAN [-h] [--afd AFD] [--dim DIM] [--syn SYN] cmd
 
 positional arguments:
-  afd         The threshold for the Allelic Freqeuncy Distance. Options are:
-              0.07, 0.10, 0.21, SVM
-  dim         Number of dimensions of the formated sample. Options are: 1
-              (Conv1D) or 2 (Conv2D)
+  cmd         Action to perform. Opitons: clear, run
 
 optional arguments:
   -h, --help  show this help message and exit
+  --afd AFD   The threshold for the Allelic Freqeuncy Distance. Options are:
+              0.07, 0.10, 0.21, SVM
+  --dim DIM   Number of dimensions of the formated sample. Options are: 1
+              (Conv1D) or 2 (Conv2D)
   --syn SYN   Run training+test with synthetic data.
+
 
 ```
 

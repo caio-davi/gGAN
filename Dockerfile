@@ -11,5 +11,11 @@ RUN pip install --upgrade pip
 RUN python -m pip install -r requirements.txt 
 
 WORKDIR /gGAN
+
 COPY . .
+
+RUN chmod +x ./src/gGAN
+
+ENV PATH="/gGAN/src:${PATH}"
+
 EXPOSE 8888

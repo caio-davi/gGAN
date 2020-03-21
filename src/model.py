@@ -1,6 +1,4 @@
 import os
-import sys
-from sys import exit
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -17,9 +15,6 @@ from numpy.random import randint
 from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
-import argparse
-sys.path.insert(1, 'data/')
-import pre_processing
 
 
 # created to make sure that both discriminator models have the same wheights
@@ -229,7 +224,10 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
 def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
     model_name = str(net_model).split()[1]
     # path to save logs, performances and fake samples files
-    path = './run/' + 'test_'+model_name+'_'+datetime.now().isoformat()
+    directory = './run/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    path = directory + 'test_'+model_name+'_'+datetime.now().isoformat()
     os.mkdir(path)
     print("[INFO] Labeled Dataset size: ", len(labeled_dataset[0])+len(labeled_dataset[1])) 
     print("[INFO] Unlabeled Dataset size: ", len(unlabeled_dataset)) 
@@ -259,61 +257,3 @@ def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances =
     log_file = open(log_name, "w")
     log_file.write(log)
     log_file.close()
-
-def main():
-    # parse args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21, SVM")
-    parser.add_argument("dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
-    parser.add_argument("--syn", type=bool, help="Run training+test with synthetic data.")
-    args = parser.parse_args()
-
-    enabled_models = ['0.07', '0.10', '0.21', 'SVM']
-    enabled_dims = [1,2]
-
-    # check model argument to make sure the right model is set if not then exit
-    if args.afd in enabled_models:
-        print("[INFO] Running GAN with a max allelic frequency proximity of:", args.afd)
-    else:
-        print("[ERROR] Invalid model set:", args.afd)
-        exit()
-
-    if not (float(args.dim) in enabled_dims):
-        print("[ERROR] Invalid Dimension option:", args.dim)
-        exit()
-    
-    afd = args.afd.replace(".", "")
-    
-    sys.path.insert(1, '/gGAN/src/models')
-
-    if(str(afd) == 'SVM'):
-        net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
-    else:
-        net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
-
-
-    if(args.syn):
-        if(not pre_processing.check_current_sampling(afd)):
-            print("[ERROR] Current synthetic data doesn't match [afd] option.", args.dim)
-            exit()
-
-        print("[INFO] Loading synthetic labeled data...")    
-        labeled_dataset = load_real_labeled_samples('./data/synthetic/labeled')
-    else:
-        print("[INFO] Pre-Processing Data...")
-        print("[INFO] Dimensions: ", args.dim)
-        pre_processing.init(args.afd, args.dim)
-
-        print("[INFO] Loading original labeled data...")
-        labeled_dataset = load_real_labeled_samples('./data/labeled')
-    
-    print("[INFO] Loading original unlabeled data...")
-    unlabeled_dataset = load_real_unlabeled_samples()
-
-    # train
-    print("[INFO] Training model...")
-    train_instances(labeled_dataset, unlabeled_dataset, net_model)
-    print("[DONE] Finished.")
-
-if __name__ == '__main__':
-    main()
