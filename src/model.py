@@ -1,4 +1,6 @@
 import os
+import sys
+from sys import exit
 import numpy as np
 from numpy.random import randint
 from numpy import expand_dims
@@ -15,6 +17,9 @@ from numpy.random import randint
 from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
+import argparse
+sys.path.insert(1, 'data/')
+import pre_processing
 
 
 # created to make sure that both discriminator models have the same wheights
@@ -62,8 +67,8 @@ def load_real_labeled_samples(path):
     return [X_0, X_1]
 
 # load the unlabeled data
-def load_real_unlabeled_samples():
-    return load_from_directory('./data/unlabeled')
+def load_real_unlabeled_samples(path):
+    return load_from_directory(path)
 
 # Simply randomly split an array in two
 # There is a bug here and the test is not 100% garanted balanced, but for now it is close enough
@@ -212,7 +217,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # summarize loss on this batch
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
-        if (i+1) % 100 == 0:
+        if (i+1) % 1000 == 0:
             labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1, save_performance=True)
             t2_measured, t2_loss, t2_acc = summarize_performance_t2(d_model, c_model, labeled_test_dataset)
             log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
@@ -221,13 +226,13 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
             print(str(i+1), labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc, ' | ', t3_acc)
     return log
 
-def train_instances(labeled_dataset, unlabeled_dataset, net_model, n_instances = 1):
+def train_instances(labeled_dataset, unlabeled_dataset, net_model, path, n_instances = 1):
     model_name = str(net_model).split()[1]
     # path to save logs, performances and fake samples files
-    directory = './run/'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    path = directory + 'test_'+model_name+'_'+datetime.now().isoformat()
+    path = path + 'run/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    path = path + 'test_'+model_name+'_'+datetime.now().isoformat()
     os.mkdir(path)
     print("[INFO] Labeled Dataset size: ", len(labeled_dataset[0])+len(labeled_dataset[1])) 
     print("[INFO] Unlabeled Dataset size: ", len(unlabeled_dataset)) 

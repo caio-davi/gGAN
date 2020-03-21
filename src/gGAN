@@ -5,7 +5,9 @@ import sys
 from sys import exit
 import argparse
 import shutil
-sys.path.insert(1, 'data/')
+
+path = '/gGAN/src/'
+sys.path.insert(1, path + 'data/')
 
 def main():
     # parse args
@@ -21,9 +23,8 @@ def main():
 
     if args.cmd == 'clear':
         print("[INFO] Deleting all previus results...")
-        shutil.rmtree("./run/")
+        shutil.rmtree(path + "run/")
         exit()
-#        clear_folders(./data/synthetic/labeled)
     elif args.cmd == 'run':
 
         import model
@@ -42,7 +43,7 @@ def main():
         
         afd = args.afd.replace(".", "")
         
-        sys.path.insert(1, '/gGAN/src/models')
+        sys.path.insert(1, path +'models/')
 
         if(str(afd) == 'SVM'):
             net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
@@ -56,21 +57,21 @@ def main():
                 exit()
 
             print("[INFO] Loading synthetic labeled data...")    
-            labeled_dataset = model.load_real_labeled_samples('./data/synthetic/labeled')
+            labeled_dataset = model.load_real_labeled_samples(path + 'data/synthetic/labeled')
         else:
             print("[INFO] Pre-Processing Data...")
             print("[INFO] Dimensions: ", args.dim)
             pre_processing.init(args.afd, args.dim)
 
             print("[INFO] Loading original labeled data...")
-            labeled_dataset = model.load_real_labeled_samples('./data/labeled')
+            labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
         
         print("[INFO] Loading original unlabeled data...")
-        unlabeled_dataset = model.load_real_unlabeled_samples()
+        unlabeled_dataset = model.load_real_unlabeled_samples(path + './data/unlabeled')
 
         # train
         print("[INFO] Training model...")
-        model.train_instances(labeled_dataset, unlabeled_dataset, net_model)
+        model.train_instances(labeled_dataset, unlabeled_dataset, net_model, path)
         print("[DONE] Finished.")
     
     else:

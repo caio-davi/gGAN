@@ -90,5 +90,5 @@ def define_generator(latent_dim):
     return model
 
 ##### plot the Generator
-g_model = define_generator(100)
-plot_model(g_model, to_file='./images/generator_010.png', show_shapes=True, show_layer_names=True)
+# g_model = define_generator(100)
+# plot_model(g_model, to_file='./images/generator_010.png', show_shapes=True, show_layer_names=True)
