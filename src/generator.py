@@ -20,7 +20,6 @@ def clear_folders(folders):
             try:
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
-                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
             except Exception as e:
                 print(e)
  
@@ -52,7 +51,8 @@ print("Total Severe: ",sum(predict_c>0.5))
 df_samples = []
 sd_samples = []
 i = 0
-while len(sd_samples) < 500:
+
+for i in range(len(predict_c)):
     if(predict_d[i]>0.5):
         if(predict_c[i]>0.5):
             new_sample = pd.DataFrame(data=generated[i])
@@ -60,7 +60,6 @@ while len(sd_samples) < 500:
         else:
             new_sample = pd.DataFrame(data=generated[i])
             df_samples.append(new_sample)
-    i = i +1
 
 folders = ['./data/synthetic/labeled/DF/', './data/synthetic/labeled/SD/'] 
 

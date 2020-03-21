@@ -194,7 +194,7 @@ def summarize_performance_t3(d_model, g_model, size = 200):
     return count/size
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=100):
+def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_test_dataset, unlabeled_dataset, unlabeled_train_dataset, unlabeled_test_dataset, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=100):
     # calculate the number of batches per training epoch
     bat_per_epo = int(unlabeled_train_dataset.shape[0] / n_batch)
     # calculate the number of training iterations
@@ -217,7 +217,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # summarize loss on this batch
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
-        if (i+1) % 1000 == 0:
+        if (i+1) % 100 == 0:
             labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i+1, save_performance=True)
             t2_measured, t2_loss, t2_acc = summarize_performance_t2(d_model, c_model, labeled_test_dataset)
             log = log + str(n_instance+1)+','+str(i+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
