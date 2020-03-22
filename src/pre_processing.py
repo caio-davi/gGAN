@@ -5,8 +5,6 @@ from sklearn import preprocessing
 import os, shutil
 from sys import exit
 
-path = '/gGAN/src/'
-
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
     names = []
@@ -147,28 +145,6 @@ def create_labeled_db(labeled_data, diag, dic, dim):
             new = df.loc[i,] if dim == 1 else create_matrix(df.loc[i,])
             new.to_csv(path + 'data/labeled/SD/sample_'+str(i)+'.csv', index=False, header = False)
 
-def create_split_labeled_db(test_size=0.15):
-    clear_folders()
-    df = normalize_data(labeled_data)
-    half_test_size = int((len(df.index)*test_size/2))
-    test_count = [half_test_size, half_test_size]
-    print("[INFO] Generating Sample CSV files...")    
-    for i in range(0,len(df.index)):
-        if(diag[i] == 'DF'):
-            new = create_matrix(df.loc[i,])
-            if(test_count[0]>0):
-                new.to_csv(path + 'data/labeled/test/DF/sample_'+str(i)+'.csv')
-                test_count[0] -= 1
-            else:
-                new.to_csv(path + 'data/labeled/training/DF/sample_'+str(i)+'.csv')
-        if(diag[i] == 'SD'):
-            new = create_matrix(df.loc[i,])
-            if(test_count[1]>0):
-                new.to_csv(path + 'data/labeled/test/SD/sample_'+str(i)+'.csv')
-                test_count[1] -= 1
-            else:
-                new.to_csv(path + 'data/labeled/training/SD/sample_'+str(i)+'.csv')
-
 def create_folders(folders):
     for folder in folders:
         os.makedirs(folder, exist_ok=True)
@@ -183,19 +159,27 @@ def clear_folders(folders):
             except Exception as e:
                 print(e)
 
-def current_sampling(afp):
-    f_name = path + 'data/current'
+def check_current_sampling(afd):
+    f_name = '/gGAN/src/data/current'
     f = open(f_name, "r")
-    if afp == f.readline():
+    if afd == f.readline():
         return True
     else:
-        f = open(f_name, "w")
-        f.write(afp)
         return False
 
-def init(afd, dim):
+def current_sampling(afd):
+    current = check_current_sampling(afd)
+    if current:
+        return True
+    else:
+        f_name = 'data/current'
+        f = open(f_name, "w")
+        f.write(afd)
+        return False
 
-    if current_sampling(afd):
+def init(path, afd, dim, dic=False):
+
+    if (current_sampling(afd) and not dic):
         return
 
     dim = float(dim)
@@ -221,7 +205,10 @@ def init(afd, dim):
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]
 
-    dic = create_dict(labeled_data, unlabeled_data)
+    dictionary = create_dict(labeled_data, unlabeled_data)
+    
+    if(dic):
+        return dictionary
 
     # clear folders and recreate them
     # clear_folders() # issue with clearing folders since they may not exist on the first run
@@ -230,7 +217,7 @@ def init(afd, dim):
     clear_folders(folders)
 
     print("[INFO] Creating Labeled Sample Data...")
-    create_labeled_db(labeled_data, diag, dic, dim)
+    create_labeled_db(labeled_data, diag, dictionary, dim)
     print("[INFO] Creating Unlabeled Sample Data...")
-    create_unlabeled_db(unlabeled_data, dic, dim)
+    create_unlabeled_db(unlabeled_data, dictionary, dim)
     print("[DONE] Finished Pre-Processing Data")

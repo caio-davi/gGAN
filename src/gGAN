@@ -7,7 +7,6 @@ import argparse
 import shutil
 
 path = '/gGAN/src/'
-sys.path.insert(1, path + 'data/')
 
 def main():
     # parse args
@@ -61,7 +60,7 @@ def main():
         else:
             print("[INFO] Pre-Processing Data...")
             print("[INFO] Dimensions: ", args.dim)
-            pre_processing.init(args.afd, args.dim)
+            pre_processing.init(path, args.afd, args.dim)
 
             print("[INFO] Loading original labeled data...")
             labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')

@@ -7,7 +7,11 @@ from numpy import reshape
 from numpy.random import randn
 import pandas as pd
 import os
+import pre_processing
+import sys
 
+
+path = '/gGAN/src/'
 
 def create_folders(folders):
     for folder in folders:
@@ -22,6 +26,13 @@ def clear_folders(folders):
                     os.unlink(file_path)
             except Exception as e:
                 print(e)
+
+def invert_dic(dictionary):
+    to_list = []
+    for key, item in dictionary.items():
+        to_list.append(list({v: k for k, v in item.items()}.keys()))
+    return to_list; 
+
  
 # load model
 c_model = load_model('../backups/Model_SVM/c_model.h5')
@@ -53,13 +64,21 @@ sd_samples = []
 i = 0
 
 for i in range(len(predict_c)):
+    new_sample = pd.DataFrame(data=generated[i])
     if(predict_d[i]>0.5):
         if(predict_c[i]>0.5):
-            new_sample = pd.DataFrame(data=generated[i])
             sd_samples.append(new_sample)
         else:
-            new_sample = pd.DataFrame(data=generated[i])
             df_samples.append(new_sample)
+
+dic = pre_processing.init(path, 'SVM', '1' , dic=True)
+
+inv_map = invert_dic(dic)
+
+#print('Dict: ', inv_map)
+print('sample: ', df_samples[0])
+
+sys.exit()
 
 folders = ['./data/synthetic/labeled/DF/', './data/synthetic/labeled/SD/'] 
 
