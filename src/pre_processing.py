@@ -177,7 +177,7 @@ def current_sampling(afd):
         f.write(afd)
         return False
 
-def init(path, afd, dim, dic=False):
+def init(path, afd, dim=1, dic=False):
 
     if (current_sampling(afd) and not dic):
         return

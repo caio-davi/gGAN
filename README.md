@@ -7,38 +7,35 @@ We intend to use the idea behind Generative Adversarial Networks to artificially
 
 Just build and run the `ggan` docker container:
 
-```BASH
+```
 docker build . -t ggan
 docker run -it -v $PWD:/gGAN ggan bash
 ```
 
 After that, your environment should be set. Navigate to the src/ directory. You can run the gGAN using:
 
-```BASH
+```
 gGAN.py
 ```
 
 Notice that are several parameters to run the Genetic GAN, bellow is the output of the help message:
 
-```BASH
-gGAN.py --help
-usage: gGAN [-h] [--afd AFD] [--dim DIM] [--syn SYN] cmd
+```
+gGAN --help
+usage: gGAN [-h] [--afd AFD] [--syn SYN] cmd
 
 positional arguments:
-  cmd         Action to perform. Opitons: clear, run
+  cmd         Action to perform. Opitons: run : run, clear, test.
 
 optional arguments:
   -h, --help  show this help message and exit
   --afd AFD   The threshold for the Allelic Freqeuncy Distance. Options are:
               0.07, 0.10, 0.21, SVM
-  --dim DIM   Number of dimensions of the formated sample. Options are: 1
-              (Conv1D) or 2 (Conv2D)
   --syn SYN   Run training+test with synthetic data.
-
-
+  
 ```
 
-The number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `gGAN.py` code. After running the gGAN model, the logs of the test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some changes into the code as well.
+For now, the number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `model.py` code. After running the gGAN model, the logs of the test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some changes into the code as well.
 
 ## Related Researches
 

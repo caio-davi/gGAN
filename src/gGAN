@@ -8,39 +8,68 @@ import shutil
 
 path = '/gGAN/src/'
 
+def check_afd(afd):
+    enabled_models = ['0.07', '0.10', '0.21', 'SVM']
+    if afd in enabled_models:
+        print("[INFO] Running GAN with a max allelic frequency proximity of:", afd)
+    else:
+        print("[ERROR] Invalid model set:", afd)
+        exit()
+    return afd.replace(".", "")
+
 def main():
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("cmd", help="Action to perform. Opitons: clear, run")
+    parser.add_argument("cmd", help="Action to perform. Opitons: run : run, clear, test.")
     parser.add_argument("--afd", help="The threshold for the Allelic Freqeuncy Distance. Options are: 0.07, 0.10, 0.21, SVM")
-    parser.add_argument("--dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
+#    parser.add_argument("--dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     parser.add_argument("--syn", type=bool, help="Run training+test with synthetic data.")
     args = parser.parse_args()
 
-    enabled_models = ['0.07', '0.10', '0.21', 'SVM']
+    args.dim = '1'
+
     enabled_dims = [1,2]
+
+    if not (float(args.dim) in enabled_dims):
+        print("[ERROR] Invalid Dimension option:", args.dim)
+        exit()
 
     if args.cmd == 'clear':
         print("[INFO] Deleting all previus results...")
         shutil.rmtree(path + "run/")
         exit()
+
+    elif args.cmd == 'test':
+
+        afd = check_afd(args.afd)
+
+        import model
+        from keras.models import load_model
+
+
+        c_model = load_model('/gGAN/backups/'+afd+'/c_model.h5')
+        d_model = load_model('/gGAN/backups/'+afd+'/d_model.h5', compile=True)
+        g_model = load_model('/gGAN/backups/'+afd+'/g_model.h5', compile=True)
+
+        print("[INFO] Loading original labeled data...")
+        labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
+        
+        print("[INFO] Loading original unlabeled data...")
+        unlabeled_dataset = model.load_real_unlabeled_samples(path + './data/unlabeled')
+        # generate train and test LABELED datasets
+        labeled_train_dataset, labeled_test_dataset = model.generate_supervised_datasets(labeled_dataset)
+        # generate train and test UNLABELED datasets
+        unlabeled_train_dataset, unlabeled_test_dataset = model.generate_unsupervised_datasets(unlabeled_dataset)
+
+        model.tests(g_model, d_model, c_model, 100, labeled_test_dataset, unlabeled_test_dataset)
+
+
     elif args.cmd == 'run':
+
+        afd = check_afd(args.afd)
 
         import model
         import pre_processing
-
-        # check model argument to make sure the right model is set if not then exit
-        if args.afd in enabled_models:
-            print("[INFO] Running GAN with a max allelic frequency proximity of:", args.afd)
-        else:
-            print("[ERROR] Invalid model set:", args.afd)
-            exit()
-
-        if not (float(args.dim) in enabled_dims):
-            print("[ERROR] Invalid Dimension option:", args.dim)
-            exit()
-        
-        afd = args.afd.replace(".", "")
         
         sys.path.insert(1, path +'models/')
 
