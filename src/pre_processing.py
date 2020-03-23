@@ -5,6 +5,8 @@ from sklearn import preprocessing
 import os, shutil
 from sys import exit
 
+path = '/gGAN/src/'
+
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
     names = []

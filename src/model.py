@@ -193,13 +193,13 @@ def summarize_performance_t3(d_model, g_model, size = 200):
     count = sum(predict_d>0.5)
     return count/size
 
-def tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path=None, log=None, epoch=0, save_performance=False, n_instance=0, logging=False ):
-    labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, epoch, save_performance)
+def tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path=None, log=None, step=0, save_performance=False, n_instance=0, logging=False ):
+    labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, step, save_performance)
     t2_measured, t2_loss, t2_acc = summarize_performance_t2(d_model, c_model, labeled_test_dataset)
     t3_acc = summarize_performance_t3(d_model, g_model)
     if(logging):
-        print(str(epoch+1), labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc, ' | ', t3_acc)
-        log = log + str(n_instance+1)+','+str(epoch+1)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
+        print(str(step), labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc, ' | ', t3_acc)
+        log = log + str(n_instance+1)+','+str(step)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
         log = log + ' | ' + str(t3_acc)+'\n'
         return log
     else:
@@ -221,7 +221,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
     # calculate the size of half a batch of samples
     half_batch = int(n_batch / 2)
     log = ''
-    for i in range(n_steps):
+    for i in range(1, n_steps):
         # update supervised discriminator (c)
         [Xsup_real, ysup_real] = select_supervised_samples(labeled_train_dataset, n_samples=10)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
@@ -236,7 +236,7 @@ def train(g_model, d_model, c_model, gan_model, labeled_train_dataset, labeled_t
         # summarize loss on this batch
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
-        if (i+1) % 100 == 0:
+        if (i) % 100 == 0:
             log = tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, i, save_performance=True, n_instance=n_instance, logging=True)
     return log
 
