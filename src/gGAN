@@ -95,7 +95,7 @@ def main():
             labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
         
         print("[INFO] Loading original unlabeled data...")
-        unlabeled_dataset = model.load_real_unlabeled_samples(path + './data/unlabeled')
+        unlabeled_dataset = model.load_real_unlabeled_samples(path + 'data/unlabeled')
 
         # train
         print("[INFO] Training model...")

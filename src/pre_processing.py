@@ -163,7 +163,7 @@ def clear_folders(folders):
 
 def check_current_sampling(afd):
     f_name = '/gGAN/src/data/current'
-    f = open(f_name, "r")
+    f = open(f_name, "w+")
     if afd == f.readline():
         return True
     else:
@@ -174,8 +174,8 @@ def current_sampling(afd):
     if current:
         return True
     else:
-        f_name = 'data/current'
-        f = open(f_name, "w")
+        f_name = '/gGAN/src/data/current'
+        f = open(f_name, "w+")
         f.write(afd)
         return False
 
@@ -212,9 +212,9 @@ def init(path, afd, dim=1, dic=False):
     if(dic):
         return dictionary
 
-    # clear folders and recreate them
-    # clear_folders() # issue with clearing folders since they may not exist on the first run
-    folders = [path+'data/labeled/test/DF',path+'data/labeled/test/SD', path+'data/labeled/training/DF', path+'data/labeled/training/SD' ] 
+    folders_names = ['data/labeled/DF','data/labeled/SD', 'data/unlabeled'] 
+    folders = map(lambda folder_name: path + folder_name, folders_names)
+
     create_folders(folders)
     clear_folders(folders)
 
