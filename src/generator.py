@@ -11,7 +11,7 @@ import pre_processing
 import sys
 
 
-path = '/gGAN/src/'
+path = '/gGAN/'
 
 def create_folders(folders):
     for folder in folders:
@@ -54,11 +54,6 @@ def translate_all(samples, dictionary):
     for sample in samples:
         new_samples.append(translate_sample(sample, dictionary))
     return new_samples
- 
-# load model
-c_model = load_model('../backups/Model_SVM/c_model.h5')
-d_model = load_model('../backups/Model_SVM/d_model.h5', compile=False)
-g_model = load_model('../backups/Model_SVM/g_model.h5', compile=False)
 
 def generate_latent_points(latent_dim, n_samples):
     z_input = randn(latent_dim * n_samples)
@@ -69,6 +64,11 @@ def generate_samples(generator, latent_dim, n_samples):
     z_input = generate_latent_points(latent_dim, n_samples)
     samples = generator.predict(z_input)
     return samples
+
+# load model
+c_model = load_model(path + 'backups/Model_SVM/c_model.h5')
+d_model = load_model(path + 'backups/Model_SVM/d_model.h5', compile=False)
+g_model = load_model(path + 'backups/Model_SVM/g_model.h5', compile=False)
 
 generated = generate_samples(g_model, 100, 100000)
 
@@ -90,7 +90,8 @@ for i in range(len(predict_c)):
     else:
         df_samples.append(new_sample)
 
-folders = ['./data/synthetic/labeled/DF/', './data/synthetic/labeled/SD/', './data/synthetic/unlabeled'] 
+folders_names = ['data/synthetic/labeled/DF/','data/synthetic/labeled/SD/', 'data/synthetic/unlabeled'] 
+folders = map(lambda folder_name: path + folder_name, folders_names)
 
 create_folders(folders)
 clear_folders(folders)

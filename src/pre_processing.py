@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import os, shutil
 from sys import exit
+import json
 
 path = '/gGAN/src/'
 
@@ -52,7 +53,7 @@ def normalize_data(dataFrame):
     return pd.DataFrame(x_scaled)
 
 # Normilize data and create a dict for mapping both of the datasets
-def create_dict(dataframe_1, dataframe_2):
+def create_dict(filepath, dataframe_1, dataframe_2):
     dictionary = dict()
     for feature in dataframe_1.columns:
         categories_1 = dataframe_1.loc[:,feature].astype("category").cat.categories
@@ -60,6 +61,8 @@ def create_dict(dataframe_1, dataframe_2):
         categories = list(set(categories_1) | set(categories_2))
         values = create_values(len(categories))
         dictionary[feature] = dict(zip(categories,values))
+    with open(filepath, 'w+') as f:
+        json.dump(dictionary, f)
     return dictionary
 
 # Create a fixed sparse array between 0 and 1
@@ -184,8 +187,6 @@ def init(path, afd, dim=1, dic=False):
     if (current_sampling(afd) and not dic):
         return
 
-    dim = float(dim)
-
     # From Dengue Paper
     labeled_data = pd.read_csv(path + 'data/labeled.csv', header=0)
     diag = labeled_data['diagnose']
@@ -207,7 +208,14 @@ def init(path, afd, dim=1, dic=False):
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]
 
-    dictionary = create_dict(labeled_data, unlabeled_data)
+    dict_filepath = path+'data/dicts/dict_'+dim+'_'+str(afd)+'.json'
+    if(os.path.exists(dict_filepath)):
+        print("[INFO] Loading Dictionary...")
+        with open(dict_filepath, 'r') as f:
+            dictionary = json.load(f)
+    else:
+        print("[INFO] Creating Dictionary...")
+        dictionary = create_dict(dict_filepath, labeled_data, unlabeled_data)
     
     if(dic):
         return dictionary
@@ -217,6 +225,8 @@ def init(path, afd, dim=1, dic=False):
 
     create_folders(folders)
     clear_folders(folders)
+
+    dim = float(dim)
 
     print("[INFO] Creating Labeled Sample Data...")
     create_labeled_db(labeled_data, diag, dictionary, dim)
