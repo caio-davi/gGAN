@@ -5,6 +5,7 @@ import sys
 from sys import exit
 import argparse
 import shutil
+import model
 
 path = '/gGAN/src/'
 
@@ -16,6 +17,27 @@ def check_afd(afd):
         print("[ERROR] Invalid model set:", afd)
         exit()
     return afd.replace(".", "")
+
+def load_datasets(path, afd, dim, syn):
+    import pre_processing
+    if(syn):
+        if(not pre_processing.check_current_sampling(afd)):
+            print("[ERROR] Current synthetic data doesn't match [afd] option.", dim)
+            exit()
+
+        print("[INFO] Loading synthetic labeled data...")    
+        labeled_dataset = model.load_real_labeled_samples(path + 'data/synthetic/labeled')
+    else:
+        print("[INFO] Pre-Processing Data...")
+        print("[INFO] Dimensions: ", dim)
+        pre_processing.init(path, afd, dim)
+
+        print("[INFO] Loading original labeled data...")
+        labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
+    
+    print("[INFO] Loading original unlabeled data...")
+    unlabeled_dataset = model.load_real_unlabeled_samples(path + 'data/unlabeled')
+    return labeled_dataset, unlabeled_dataset
 
 def main():
     # parse args
@@ -43,7 +65,6 @@ def main():
 
         afd = check_afd(args.afd)
 
-        import model
         from keras.models import load_model
 
 
@@ -51,11 +72,8 @@ def main():
         d_model = load_model('/gGAN/backups/'+afd+'/d_model.h5', compile=True)
         g_model = load_model('/gGAN/backups/'+afd+'/g_model.h5', compile=True)
 
-        print("[INFO] Loading original labeled data...")
-        labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
-        
-        print("[INFO] Loading original unlabeled data...")
-        unlabeled_dataset = model.load_real_unlabeled_samples(path + './data/unlabeled')
+        labeled_dataset, unlabeled_dataset = load_datasets(path, afd, args.dim, args.syn)
+
         # generate train and test LABELED datasets
         labeled_train_dataset, labeled_test_dataset = model.generate_supervised_datasets(labeled_dataset)
         # generate train and test UNLABELED datasets
@@ -67,9 +85,6 @@ def main():
     elif args.cmd == 'run':
 
         afd = check_afd(args.afd)
-
-        import model
-        import pre_processing
         
         sys.path.insert(1, path +'models/')
 
@@ -78,24 +93,7 @@ def main():
         else:
             net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
 
-
-        if(args.syn):
-            if(not pre_processing.check_current_sampling(afd)):
-                print("[ERROR] Current synthetic data doesn't match [afd] option.", args.dim)
-                exit()
-
-            print("[INFO] Loading synthetic labeled data...")    
-            labeled_dataset = model.load_real_labeled_samples(path + 'data/synthetic/labeled')
-        else:
-            print("[INFO] Pre-Processing Data...")
-            print("[INFO] Dimensions: ", args.dim)
-            pre_processing.init(path, afd, args.dim)
-
-            print("[INFO] Loading original labeled data...")
-            labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
-        
-        print("[INFO] Loading original unlabeled data...")
-        unlabeled_dataset = model.load_real_unlabeled_samples(path + 'data/unlabeled')
+        labeled_dataset, unlabeled_dataset = load_datasets(path, afd, args.dim, args.syn)
 
         # train
         print("[INFO] Training model...")
