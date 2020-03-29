@@ -1,6 +1,4 @@
-import os
-import sys
-from sys import exit
+from os import mkdir
 import numpy as np
 from numpy import delete
 from numpy import zeros
@@ -9,19 +7,12 @@ from numpy import empty
 from numpy import loadtxt
 from numpy import asarray
 from numpy import append
-from numpy import array_equal
+from numpy import array
+from numpy import reshape
 from numpy.random import randn
 from numpy.random import randint
 from keras.models import Model
 from keras.optimizers import Adam
-import argparse
-sys.path.insert(1, 'data/')
-import pre_processing
-
-
-# created to make sure that both discriminator models have the same wheights
-def same_model(a,b):
-    return any([array_equal(a1, a2) for a1, a2 in zip(a.get_weights(), b.get_weights())])
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
@@ -38,8 +29,8 @@ def define_gan(g_model, d_model):
 
 def select_supervised_samples(dataset, n_samples=10):
     half_samples = int(n_samples/2)
-    mask = np.array(dataset[1], dtype=bool)
-    mask = np.reshape(mask,(dataset[0].shape[0]))
+    mask = array(dataset[1], dtype=bool)
+    mask = reshape(mask,(dataset[0].shape[0]))
     X_0 = dataset[0][~mask]
     X_1 = dataset[0][mask]
     ix_0 = randint(0, X_0.shape[0], half_samples)
@@ -94,7 +85,7 @@ def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_da
         # print('Classifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%%' % (acc * 100, loss))
         # acc_log = 'Tests Resultsfor models in folder '+str(count)+': \nClassifier Accuracy: %.3f%%  |  Classifier Loss: %.3f%% \n\n' % (acc * 100, loss)
         new_path = path+'/'+'partial_'+str(step)+'/'
-        os.mkdir(new_path)
+        mkdir(new_path)
         # save the generator model
         filename1 = new_path + 'g_model.h5'
         g_model.save(filename1)
@@ -106,7 +97,7 @@ def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_da
     return labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc
 
 def create_mask(arr):
-    mask = np.zeros(len(arr),dtype=bool)
+    mask = zeros(len(arr),dtype=bool)
     for i in range(len(arr)):
         if(arr[i][0] > 0.5):
             mask[i] = True

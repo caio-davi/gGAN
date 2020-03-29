@@ -1,9 +1,8 @@
-import pandas as pd
-from numpy import genfromtxt
+from pandas import DataFrame
+from pandas import read_csv
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
-import os, shutil
-from sys import exit
+import os
 import json
 
 path = '/gGAN/src/'
@@ -19,7 +18,7 @@ def most_frequents(data):
         allele_1.append(snp_values.index[0])
         comp.append(snp_values[0]/len(data))
     data = {'allele' : allele_1, 'freq':comp}
-    return pd.DataFrame(data, index=names, columns=['allele', 'freq'])
+    return DataFrame(data, index=names, columns=['allele', 'freq'])
 
 # Compare the different encodes by looking the most frequent genotype of each SNP
 def compare_encodes(code_A, code_B, max_diff=None):
@@ -39,7 +38,7 @@ def compare_encodes(code_A, code_B, max_diff=None):
                 c.append(code_B.loc[snp,:][0])
                 d.append(code_B.loc[snp,:][1])
     data = {'code_a': a, 'freq_a': b , 'code_b' : c, 'freq_b': d}
-    diff = pd.DataFrame(data, index=diff, columns=['code_a','freq_a','code_b','freq_b'])
+    diff = DataFrame(data, index=diff, columns=['code_a','freq_a','code_b','freq_b'])
     return diff if (max_diff) else snps
 
 # This will normilize the data, but I'm not sure if I can make the way back
@@ -50,7 +49,7 @@ def normalize_data(dataFrame):
         setattr(dataFrame, feature, getattr(dataFrame,feature).astype("category").cat.codes)
     min_max_scaler = preprocessing.MinMaxScaler()
     x_scaled = min_max_scaler.fit_transform(dataFrame.values)
-    return pd.DataFrame(x_scaled)
+    return DataFrame(x_scaled)
 
 # Normilize data and create a dict for mapping both of the datasets
 def create_dict(filepath, dataframe_1, dataframe_2):
@@ -114,7 +113,7 @@ def create_matrix(sample):
     lim_inf = 0
     lim_sup = 0
     cols = list_to(x2)
-    df = pd.DataFrame(columns=cols)
+    df = DataFrame(columns=cols)
     for i in range(x2,len(sample)+1,x2):
         lim_sup = i
         s = sample.iloc[lim_inf:lim_sup]
@@ -188,22 +187,22 @@ def init(path, afd, dim=1, dic=False):
         return
 
     # From Dengue Paper
-    labeled_data = pd.read_csv(path + 'data/labeled.csv', header=0)
+    labeled_data = read_csv(path + 'data/labeled.csv', header=0)
     diag = labeled_data['diagnose']
     labeled_data = labeled_data.drop(['ID'], axis=1)
 
     # From 1000Genomes
-    unlabeled_data = pd.read_csv(path + 'data/unlabeled.csv', sep=';',header=0)
+    unlabeled_data = read_csv(path + 'data/unlabeled.csv', sep=';',header=0)
     unlabeled_data = unlabeled_data.drop(['Patient ID', 'Population', 'rs7277299', 'Unnamed: 299'], axis=1)
 
     labeled_data = labeled_data[unlabeled_data.columns]
 
     if(str(afd) == 'SVM'):
-        mask = pd.read_csv(path + 'data/masks/dengue_paper.csv', index_col=None, header=None)
+        mask = read_csv(path + 'data/masks/dengue_paper.csv', index_col=None, header=None)
     elif(str(afd) == 'hybrid'):
-        mask = pd.read_csv(path + 'data/masks/hybrid.csv', index_col=None, header=None)
+        mask = read_csv(path + 'data/masks/hybrid.csv', index_col=None, header=None)
     else:
-        mask = pd.read_csv(path + 'data/masks/max_diff_'+str(afd)+'.csv', index_col=None, header=None)
+        mask = read_csv(path + 'data/masks/max_diff_'+str(afd)+'.csv', index_col=None, header=None)
 
     labeled_data = labeled_data[mask[1].tolist()]
     unlabeled_data = unlabeled_data[mask[1].tolist()]
