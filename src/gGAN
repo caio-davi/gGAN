@@ -54,7 +54,8 @@ def load_datasets(path, afd, dim, syn, log_path, random=True):
         'labeled_train_dataset' : labeled_train_dataset,
         'labeled_test_dataset' : labeled_test_dataset,
         'unlabeled_train_dataset' : unlabeled_train_dataset,
-        'unlabeled_test_dataset' : unlabeled_test_dataset
+        'unlabeled_test_dataset' : unlabeled_test_dataset,
+        'unlabeled_dataset' : unlabeled_dataset,
     }
     return datasets
 

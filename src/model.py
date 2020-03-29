@@ -165,7 +165,7 @@ def train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size,
         [Xsup_real, ysup_real] = select_supervised_samples(datasets['labeled_train_dataset'], n_samples=10)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
         # update unsupervised discriminator (d)
-        [X_real, y_real] = select_unsupervised_samples(datasets['unlabeled_train_dataset'], n_samples=half_batch)
+        [X_real, y_real] = select_unsupervised_samples(datasets['unlabeled_dataset'], n_samples=half_batch)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
         X_fake, y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
         d_loss2 = d_model.train_on_batch(X_fake, y_fake)
