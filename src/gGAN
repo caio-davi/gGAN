@@ -5,9 +5,7 @@ import sys
 from sys import exit
 import argparse
 import shutil
-import model
-
-path = '/gGAN/src/'
+from datetime import datetime
 
 def check_afd(afd):
     enabled_models = ['0.07', '0.10', '0.21', 'SVM']
@@ -18,7 +16,17 @@ def check_afd(afd):
         exit()
     return afd.replace(".", "")
 
-def load_datasets(path, afd, dim, syn):
+def make_model_path(path, net_model):
+    model_name = str(net_model).split()[1]
+    # path to save logs, performances and fake samples files
+    path = path + 'run/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    path = path + 'test_'+model_name+'_'+datetime.now().isoformat()
+    os.mkdir(path)
+    return path
+
+def load_datasets(path, afd, dim, syn, log_path, random=True):
     import load_data
     import pre_processing
     if(syn):
@@ -39,9 +47,9 @@ def load_datasets(path, afd, dim, syn):
     print("[INFO] Loading original unlabeled data...")
     unlabeled_dataset = load_data.load_unlabeled_samples(path + 'data/unlabeled')
     # generate train and test LABELED datasets
-    labeled_train_dataset, labeled_test_dataset = load_data.generate_supervised_datasets(labeled_dataset)
+    labeled_train_dataset, labeled_test_dataset = load_data.generate_supervised_datasets(labeled_dataset, log_path, random)
     # generate train and test UNLABELED datasets
-    unlabeled_train_dataset, unlabeled_test_dataset = load_data.generate_unsupervised_datasets(unlabeled_dataset)
+    unlabeled_train_dataset, unlabeled_test_dataset = load_data.generate_unsupervised_datasets(unlabeled_dataset, log_path, random)
     datasets = {
         'labeled_train_dataset' : labeled_train_dataset,
         'labeled_test_dataset' : labeled_test_dataset,
@@ -58,10 +66,9 @@ def main():
 #    parser.add_argument("--dim", help="Number of dimensions of the formated sample. Options are: 1 (Conv1D) or 2 (Conv2D)")
     parser.add_argument("--syn", type=bool, help="Run training+test with synthetic data.")
     args = parser.parse_args()
-
     args.dim = '1'
-
     enabled_dims = [1,2]
+    path = '/gGAN/src/'
 
     if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
@@ -73,39 +80,31 @@ def main():
         exit()
 
     elif args.cmd == 'test':
-
-        afd = check_afd(args.afd)
-
+        import model
         from keras.models import load_model
-
-
-        c_model = load_model('/gGAN/backups/'+afd+'/c_model.h5')
-        d_model = load_model('/gGAN/backups/'+afd+'/d_model.h5', compile=True)
-        g_model = load_model('/gGAN/backups/'+afd+'/g_model.h5', compile=True)
-
-        datasets = load_datasets(path, afd, args.dim, args.syn)
-
+        afd = check_afd(args.afd)
+        backup_path = '/gGAN/backups/'+afd
+        c_model = load_model(backup_path+'/c_model.h5')
+        d_model = load_model(backup_path+'/d_model.h5', compile=True)
+        g_model = load_model(backup_path+'/g_model.h5', compile=True)
+        datasets = load_datasets(path, afd, args.dim, args.syn, backup_path, False)
         model.tests(g_model, d_model, c_model, 100, datasets['labeled_test_dataset'], datasets['unlabeled_test_dataset'])
 
-
     elif args.cmd == 'run':
-
+        import model
         afd = check_afd(args.afd)
-        
         sys.path.insert(1, path +'models/')
-
         if(str(afd) == 'SVM'):
             net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
         else:
             net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
-
-        datasets = load_datasets(path, afd, args.dim, args.syn)
-
+        log_path = make_model_path (path, net_model)
+        datasets = load_datasets(path, afd, args.dim, args.syn, log_path, True)
         # train
         print("[INFO] Training model...")
-        model.train_instances(datasets, net_model, path)
+        model.train_instances(datasets, net_model, log_path)
         print("[DONE] Finished.")
-    
+
     else:
         print("[ERROR] Invalid action.")
 

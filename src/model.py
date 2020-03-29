@@ -12,7 +12,6 @@ from numpy import append
 from numpy import array_equal
 from numpy.random import randn
 from numpy.random import randint
-from datetime import datetime
 from keras.models import Model
 from keras.optimizers import Adam
 import argparse
@@ -181,13 +180,6 @@ def train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size,
     return log
 
 def train_instances(datasets, net_model, path, n_instances = 1):
-    model_name = str(net_model).split()[1]
-    # path to save logs, performances and fake samples files
-    path = path + 'run/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    path = path + 'test_'+model_name+'_'+datetime.now().isoformat()
-    os.mkdir(path)
     print("[INFO] Labeled Dataset size: ", len(datasets['labeled_train_dataset'][1])+len(datasets['labeled_test_dataset'][1])) 
     print("[INFO] Unlabeled Dataset size: ", len(datasets['unlabeled_train_dataset'])+len(datasets['unlabeled_test_dataset'])) 
     # log summary
