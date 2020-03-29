@@ -19,25 +19,36 @@ def check_afd(afd):
     return afd.replace(".", "")
 
 def load_datasets(path, afd, dim, syn):
+    import load_data
     import pre_processing
     if(syn):
         if(not pre_processing.check_current_sampling(afd)):
             print("[ERROR] Current synthetic data doesn't match [afd] option.", dim)
             exit()
-
+        print('-------------ENTRA AQUI -------------------------------------')
         print("[INFO] Loading synthetic labeled data...")    
-        labeled_dataset = model.load_real_labeled_samples(path + 'data/synthetic/labeled')
+        labeled_dataset = load_data.load_labeled_samples(path + 'data/synthetic/labeled')
     else:
         print("[INFO] Pre-Processing Data...")
         print("[INFO] Dimensions: ", dim)
         pre_processing.init(path, afd, dim)
 
         print("[INFO] Loading original labeled data...")
-        labeled_dataset = model.load_real_labeled_samples(path + 'data/labeled')
+        labeled_dataset = load_data.load_labeled_samples(path + 'data/labeled')
     
     print("[INFO] Loading original unlabeled data...")
-    unlabeled_dataset = model.load_real_unlabeled_samples(path + 'data/unlabeled')
-    return labeled_dataset, unlabeled_dataset
+    unlabeled_dataset = load_data.load_unlabeled_samples(path + 'data/unlabeled')
+    # generate train and test LABELED datasets
+    labeled_train_dataset, labeled_test_dataset = load_data.generate_supervised_datasets(labeled_dataset)
+    # generate train and test UNLABELED datasets
+    unlabeled_train_dataset, unlabeled_test_dataset = load_data.generate_unsupervised_datasets(unlabeled_dataset)
+    datasets = {
+        'labeled_train_dataset' : labeled_train_dataset,
+        'labeled_test_dataset' : labeled_test_dataset,
+        'unlabeled_train_dataset' : unlabeled_train_dataset,
+        'unlabeled_test_dataset' : unlabeled_test_dataset
+    }
+    return datasets
 
 def main():
     # parse args
@@ -72,14 +83,9 @@ def main():
         d_model = load_model('/gGAN/backups/'+afd+'/d_model.h5', compile=True)
         g_model = load_model('/gGAN/backups/'+afd+'/g_model.h5', compile=True)
 
-        labeled_dataset, unlabeled_dataset = load_datasets(path, afd, args.dim, args.syn)
+        datasets = load_datasets(path, afd, args.dim, args.syn)
 
-        # generate train and test LABELED datasets
-        labeled_train_dataset, labeled_test_dataset = model.generate_supervised_datasets(labeled_dataset)
-        # generate train and test UNLABELED datasets
-        unlabeled_train_dataset, unlabeled_test_dataset = model.generate_unsupervised_datasets(unlabeled_dataset)
-
-        model.tests(g_model, d_model, c_model, 100, labeled_test_dataset, unlabeled_test_dataset)
+        model.tests(g_model, d_model, c_model, 100, datasets['labeled_test_dataset'], datasets['unlabeled_test_dataset'])
 
 
     elif args.cmd == 'run':
@@ -93,11 +99,11 @@ def main():
         else:
             net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
 
-        labeled_dataset, unlabeled_dataset = load_datasets(path, afd, args.dim, args.syn)
+        datasets = load_datasets(path, afd, args.dim, args.syn)
 
         # train
         print("[INFO] Training model...")
-        model.train_instances(labeled_dataset, unlabeled_dataset, net_model, path)
+        model.train_instances(datasets, net_model, path)
         print("[DONE] Finished.")
     
     else:
