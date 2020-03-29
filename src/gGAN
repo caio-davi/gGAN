@@ -8,7 +8,7 @@ import shutil
 from datetime import datetime
 
 def check_afd(afd):
-    enabled_models = ['0.07', '0.10', '0.21', 'SVM']
+    enabled_models = ['0.07', '0.10', '0.21', '1.00','SVM']
     if afd in enabled_models:
         print("[INFO] Running GAN with a max allelic frequency proximity of:", afd)
     else:
