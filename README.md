@@ -3,6 +3,8 @@
 Creating large datasets for genetically influenced diseases is a hard and expensive task.
 We intend to use the idea behind Generative Adversarial Networks to artificially create cohesive labeled genetic data to characterize genetically influenced diseases, specifically Dengue.
 
+> ### Paper: [A Semi-Supervised Generative Adversarial Network for Prediction of Genetic Disease Outcomes](https://arxiv.org/abs/2007.01200)
+
 ## Getting Started
 
 Just build and run the `ggan` docker container:
