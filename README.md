@@ -39,6 +39,8 @@ optional arguments:
 
 For now, the number of epochs, the size of the batches, and all the network parameters are hardcoded into the python file, if you want to change that, you may edit the `model.py` code. After running the gGAN model, the logs of the test will be available in the folder `run/`, you can plot your data using `plot_tests.py`, but it will need some changes into the code as well.
 
+> ### The branch `ada` is meant to be used in the TAMU HPRC cluster.
+
 ## Related Researches
 
 - [Severe Dengue Prognosis Using Human Genome Data and Machine Learning](https://ieeexplore.ieee.org/abstract/document/8633395)
