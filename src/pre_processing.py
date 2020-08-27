@@ -145,7 +145,7 @@ def clear_folders(folders):
                 print(e)
 
 def check_current_sampling(afd):
-    f_name = path + 'src/data/current'
+    f_name = path + 'data/current'
     f = open(f_name, "w+")
     if afd == f.readline():
         return True
@@ -157,7 +157,7 @@ def current_sampling(afd):
     if current:
         return True
     else:
-        f_name = path + 'src/data/current'
+        f_name = path + 'data/current'
         f = open(f_name, "w+")
         f.write(afd)
         return False
