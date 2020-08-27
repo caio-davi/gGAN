@@ -3,7 +3,7 @@ from pandas import read_csv
 import os
 import json
 
-path = '/gGAN/src/'
+path = '/home/caio.davi/Workspace/gGAN/src/'
 
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
@@ -145,7 +145,7 @@ def clear_folders(folders):
                 print(e)
 
 def check_current_sampling(afd):
-    f_name = '/gGAN/src/data/current'
+    f_name = path + 'src/data/current'
     f = open(f_name, "w+")
     if afd == f.readline():
         return True
@@ -157,7 +157,7 @@ def current_sampling(afd):
     if current:
         return True
     else:
-        f_name = '/gGAN/src/data/current'
+        f_name = path + 'src/data/current'
         f = open(f_name, "w+")
         f.write(afd)
         return False

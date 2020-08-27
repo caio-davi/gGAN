@@ -84,7 +84,7 @@ def main():
         import model
         from keras.models import load_model
         afd = check_afd(args.afd)
-        backup_path = 'backups/'+afd
+        backup_path = path + 'backups/'+afd
         c_model = load_model(backup_path+'/c_model.h5')
         d_model = load_model(backup_path+'/d_model.h5', compile=True)
         g_model = load_model(backup_path+'/g_model.h5', compile=True)
