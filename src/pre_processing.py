@@ -1,7 +1,5 @@
 from pandas import DataFrame
 from pandas import read_csv
-import matplotlib.pyplot as plt
-from sklearn import preprocessing
 import os
 import json
 
@@ -40,16 +38,6 @@ def compare_encodes(code_A, code_B, max_diff=None):
     data = {'code_a': a, 'freq_a': b , 'code_b' : c, 'freq_b': d}
     diff = DataFrame(data, index=diff, columns=['code_a','freq_a','code_b','freq_b'])
     return diff if (max_diff) else snps
-
-# This will normilize the data, but I'm not sure if I can make the way back
-# Since we want to generate new datasets, we will need to do it
-# Therefore, we have to rewrite this.
-def normalize_data(dataFrame):
-    for feature in dataFrame.columns:
-        setattr(dataFrame, feature, getattr(dataFrame,feature).astype("category").cat.codes)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(dataFrame.values)
-    return DataFrame(x_scaled)
 
 # Normilize data and create a dict for mapping both of the datasets
 def create_dict(filepath, dataframe_1, dataframe_2):
@@ -121,13 +109,6 @@ def create_matrix(sample):
         df = df.append(s)
         lim_inf = lim_sup
     return df
-
-# Create a image of a matrix (it must be normalized!) 
-def create_image(data):
-    fig = plt.figure(figsize = (10,10)) 
-    img = fig.add_subplot(111)
-    img.imshow(data.values, cmap='viridis')
-    plt.savefig(path + 'images/real_sample.png')
 
 # Create unlabeled data 
 def create_unlabeled_db(unlabeled_data, dic, dim):
