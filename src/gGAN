@@ -69,7 +69,7 @@ def main():
     args = parser.parse_args()
     args.dim = '1'
     enabled_dims = [1,2]
-    path = '/gGAN/src/'
+    path = '/home/caio.davi/Workspace/gGAN/'
 
     if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
@@ -84,7 +84,7 @@ def main():
         import model
         from keras.models import load_model
         afd = check_afd(args.afd)
-        backup_path = '/gGAN/backups/'+afd
+        backup_path = 'backups/'+afd
         c_model = load_model(backup_path+'/c_model.h5')
         d_model = load_model(backup_path+'/d_model.h5', compile=True)
         g_model = load_model(backup_path+'/g_model.h5', compile=True)
@@ -94,7 +94,7 @@ def main():
     elif args.cmd == 'run':
         import model
         afd = check_afd(args.afd)
-        sys.path.insert(1, path +'models/')
+        sys.path.insert(1, path +'src/models/')
         if(str(afd) == 'SVM'):
             net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
         else:
