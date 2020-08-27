@@ -19,10 +19,17 @@ def same_model(a,b):
 def define_discriminator(in_shape=(296,1), n_classes=2):
     # image input
     in_sample = Input(shape=in_shape)
+    # downsample
+    fe = Conv1D(300, (3), strides=(2), padding='same')(in_sample)
+    fe = Conv1D(450, (3), strides=(2), padding='same')(in_sample)
+    fe = LeakyReLU(alpha=0.2)(fe)
     # fully connected layers
-    fe = Dense(600, activation='relu')(in_sample)
+    fe = Dense(600, activation='relu')(fe)
     fe = Dense(1200, activation='relu')(fe)
     fe = Dense(600, activation='relu')(fe)
+    fe = Conv1D(450, (3), strides=(2), padding='same')(fe)
+    fe = Conv1D(300, (3), strides=(2), padding='same')(fe)
+    fe = LeakyReLU(alpha=0.2)(fe)
     # flatten feature maps
     fe = Flatten()(fe)
     # dropout
@@ -55,6 +62,10 @@ def define_generator(latent_dim):
     n_nodes = 100 * 1
     gen = Dense(n_nodes)(in_lat)
     gen = Dense(300, activation='relu')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(600, activation='relu')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(1200, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
     gen = Dense(600, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
