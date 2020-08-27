@@ -1,0 +1,8 @@
+name: gGAN_env
+dependencies:
+  - scipy
+  - numpy
+  - tensorflow
+  - keras
+  - pydot
+  - graphviz
