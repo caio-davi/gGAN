@@ -3,8 +3,6 @@ from pandas import read_csv
 import os
 import json
 
-path = '/home/caio.davi/Workspace/gGAN/src/'
-
 # List the most frequent genotype for each SNP and their frequency
 def most_frequents(data):
     names = []
@@ -111,7 +109,7 @@ def create_matrix(sample):
     return df
 
 # Create unlabeled data 
-def create_unlabeled_db(unlabeled_data, dic, dim):
+def create_unlabeled_db(unlabeled_data, dic, dim, path):
     df = map_dataframe(unlabeled_data, dic)
     print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
@@ -119,7 +117,7 @@ def create_unlabeled_db(unlabeled_data, dic, dim):
         new.to_csv(path + 'data/unlabeled/sample_'+str(i)+'.csv', index=False, header = False)
 
 # Create labeled data  
-def create_labeled_db(labeled_data, diag, dic, dim):
+def create_labeled_db(labeled_data, diag, dic, dim, path):
     df = map_dataframe(labeled_data, dic)
     print("[INFO] Generating Sample CSV files...")
     for i in range(0,len(df.index)):
@@ -144,7 +142,7 @@ def clear_folders(folders):
             except Exception as e:
                 print(e)
 
-def check_current_sampling(afd):
+def check_current_sampling(path, afd):
     f_name = path + 'data/current'
     f = open(f_name, "w+")
     if afd == f.readline():
@@ -152,8 +150,8 @@ def check_current_sampling(afd):
     else:
         return False
 
-def current_sampling(afd):
-    current = check_current_sampling(afd)
+def current_sampling(path, afd):
+    current = check_current_sampling(path, afd)
     if current:
         return True
     else:
@@ -164,7 +162,7 @@ def current_sampling(afd):
 
 def init(path, afd, dim=1, dic=False):
 
-    if (current_sampling(afd) and not dic):
+    if (current_sampling(path, afd) and not dic):
         return
 
     # From Dengue Paper
@@ -209,7 +207,7 @@ def init(path, afd, dim=1, dic=False):
     dim = float(dim)
 
     print("[INFO] Creating Labeled Sample Data...")
-    create_labeled_db(labeled_data, diag, dictionary, dim)
+    create_labeled_db(labeled_data, diag, dictionary, dim, path)
     print("[INFO] Creating Unlabeled Sample Data...")
-    create_unlabeled_db(unlabeled_data, dictionary, dim)
+    create_unlabeled_db(unlabeled_data, dictionary, dim, path)
     print("[DONE] Finished Pre-Processing Data")
