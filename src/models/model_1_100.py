@@ -58,8 +58,7 @@ def define_discriminator(in_shape=(296,1), n_classes=2):
 def define_generator(latent_dim):
     # image generator input
     in_lat = Input(shape=(latent_dim,))
-    # foundation for 3x4 sample
-    n_nodes = 100 * 1
+    n_nodes = latent_dim * 1
     gen = Dense(n_nodes)(in_lat)
     gen = Dense(300, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
@@ -78,6 +77,6 @@ def define_generator(latent_dim):
     model = Model(in_lat, out_layer)
     return model
 
-##### plot the Generator
+# ##### plot the Generator
 # g_model = define_generator(100)
-# plot_model(g_model, to_file='./images/generator_1_100.png', show_shapes=True, show_layer_names=True)
+# plot_model(g_model, to_file='/home/caio.davi/Workspace/gGAN/images/generator_1_100.png', show_shapes=True, show_layer_names=True)
