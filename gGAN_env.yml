@@ -1,10 +1,10 @@
-name: gGAN-0.0.1
+name: gGAN_env
 dependencies:
-  - scipy
-  - numpy
-  - tensorflow
-  - keras
-  - pydot
-  - graphviz
-  - pandas
+  - scipy=1.4.1
+  - numpy=1.18.2
+  - tensorflow=2.1.0
+  - keras=2.3.1
+  - pydot=1.4.1
+  - graphviz=0.13.2
+  - pandas=1.0.3
 
