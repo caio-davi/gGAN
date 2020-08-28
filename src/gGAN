@@ -7,6 +7,9 @@ import argparse
 import shutil
 from datetime import datetime
 
+LOG_PATH = '/scratch/user/caio.davi/Workspace/gGAN/' 
+PATH = '/home/caio.davi/Workspace/gGAN/'
+
 def check_afd(afd):
     enabled_models = ['0.07', '0.10', '0.21', '1.00','SVM']
     if afd in enabled_models:
@@ -16,10 +19,10 @@ def check_afd(afd):
         exit()
     return afd.replace(".", "")
 
-def make_model_path(path, net_model):
+def make_model_path(net_model):
     model_name = str(net_model).split()[1]
     # path to save logs, performances and fake samples files
-    path = path + 'run/'
+    path = LOG_PATH + 'run/'
     if not os.path.exists(path):
         os.makedirs(path)
     path = path + 'test_'+model_name+'_'+datetime.now().isoformat()
@@ -69,7 +72,7 @@ def main():
     args = parser.parse_args()
     args.dim = '1'
     enabled_dims = [1,2]
-    path = '/home/caio.davi/Workspace/gGAN/'
+    path = PATH
 
     if not (float(args.dim) in enabled_dims):
         print("[ERROR] Invalid Dimension option:", args.dim)
@@ -99,7 +102,7 @@ def main():
             net_model = __import__('model_'+args.dim+'_007', globals(), locals(), 0)
         else:
             net_model = __import__('model_'+args.dim+'_'+afd, globals(), locals(), 0)
-        log_path = make_model_path (path, net_model)
+        log_path = make_model_path (net_model)
         datasets = load_datasets(path, afd, args.dim, args.syn, log_path, True)
         # train
         print("[INFO] Training model...")
