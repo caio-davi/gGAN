@@ -1,4 +1,4 @@
-name: gGAN_env
+name: gGAN-0.0.1
 dependencies:
   - scipy
   - numpy
@@ -6,3 +6,5 @@ dependencies:
   - keras
   - pydot
   - graphviz
+  - pandas
+
