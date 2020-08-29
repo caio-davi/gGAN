@@ -1,6 +1,7 @@
 .DS_Store
 *.pyc
 jobs/stdout.*
+images/*
 data/labeled/*
 data/current
 data/unlabeled/*

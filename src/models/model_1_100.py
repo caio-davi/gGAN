@@ -21,13 +21,21 @@ def define_discriminator(in_shape=(296,1), n_classes=2):
     in_sample = Input(shape=in_shape)
     # downsample
     fe = Conv1D(300, (3), strides=(2), padding='same')(in_sample)
-    fe = Conv1D(450, (3), strides=(2), padding='same')(in_sample)
     fe = LeakyReLU(alpha=0.2)(fe)
     # fully connected layers
     fe = Dense(600, activation='relu')(fe)
+    fe = Dense(600, activation='relu')(fe)
+    fe = Dense(600, activation='relu')(fe)
+    fe = Dense(1200, activation='relu')(fe)
+    fe = Dense(1800, activation='relu')(fe)
+    fe = Conv1D(450, (3), strides=(2), padding='same')(fe)
+    fe = Dense(2100, activation='relu')(fe)
+    fe = Conv1D(450, (3), strides=(2), padding='same')(fe)
+    fe = Dense(1800, activation='relu')(fe)
     fe = Dense(1200, activation='relu')(fe)
     fe = Dense(600, activation='relu')(fe)
-    fe = Conv1D(450, (3), strides=(2), padding='same')(fe)
+    fe = Dense(600, activation='relu')(fe)
+    fe = Dense(600, activation='relu')(fe)
     fe = Conv1D(300, (3), strides=(2), padding='same')(fe)
     fe = LeakyReLU(alpha=0.2)(fe)
     # flatten feature maps
@@ -50,9 +58,9 @@ def define_discriminator(in_shape=(296,1), n_classes=2):
     return d_model, c_model
 
 ##### plot the Discriminator
-# d_model, c_model = define_discriminator()
-# plot_model(c_model, to_file='./images/discriminator1_1_100_plot.png', show_shapes=True, show_layer_names=True)
-# plot_model(d_model, to_file='./images/discriminator2_2_100_plot.png', show_shapes=True, show_layer_names=True)
+d_model, c_model = define_discriminator()
+plot_model(c_model, to_file='/home/caio.davi/Workspace/gGAN/images/discriminator1_1_100_plot.png', show_shapes=True, show_layer_names=True)
+plot_model(d_model, to_file='/home/caio.davi/Workspace/gGAN/images/discriminator2_2_100_plot.png', show_shapes=True, show_layer_names=True)
 
 # define the standalone generator model
 def define_generator(latent_dim):
@@ -60,23 +68,31 @@ def define_generator(latent_dim):
     in_lat = Input(shape=(latent_dim,))
     n_nodes = latent_dim * 1
     gen = Dense(n_nodes)(in_lat)
-    gen = Dense(300, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
+    gen = Dense(200, activation='relu')(gen)
+    gen = Dense(300, activation='relu')(gen)
     gen = Dense(600, activation='relu')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(1184, activation='relu')(gen)
+    gen = Reshape((592, 2))(gen)
+    gen = Dense(1200, activation='relu')(gen)
+    gen = Conv1D(100, (3), strides=(2), padding='same')(gen)
+    gen = UpSampling1D(size=2)(gen)
+    gen = Dense(2400, activation='relu')(gen)
     gen = UpSampling1D(size=2)(gen)
     gen = Dense(1200, activation='relu')(gen)
-    gen = UpSampling1D(size=2)(gen)
+    gen = Conv1D(600, (3), strides=(2), padding='same')(gen)
     gen = Dense(600, activation='relu')(gen)
-    gen = UpSampling1D(size=2)(gen)
+    gen = Conv1D(600, (3), strides=(2), padding='same')(gen)
     gen = Dense(296, activation='sigmoid')(gen)
+    # gen = Reshape((600, 2))(gen)
+    out_layer = Dense(1, activation='sigmoid')(gen)
 
-    out_layer = Reshape((296, 1))(gen)
- 
     # output
     # define model
     model = Model(in_lat, out_layer)
     return model
 
 # ##### plot the Generator
-# g_model = define_generator(100)
-# plot_model(g_model, to_file='/home/caio.davi/Workspace/gGAN/images/generator_1_100.png', show_shapes=True, show_layer_names=True)
+g_model = define_generator(100)
+plot_model(g_model, to_file='/home/caio.davi/Workspace/gGAN/images/generator_1_100.png', show_shapes=True, show_layer_names=True)

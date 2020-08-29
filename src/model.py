@@ -76,7 +76,7 @@ def generate_unsupervised_test_dataset(g_model, latent_dim, X_real):
     # return X, y 
 
 # generate samples and save as a plot and save the model
-def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, step, save_performance=False, n_samples=100):
+def summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, step, save_performance=False, n_samples=100):
     X, y = labeled_test_dataset
     labeled_loss, labeled_acc = c_model.evaluate(X, y, verbose=0)
     X, y = generate_unsupervised_test_dataset(g_model, latent_dim, unlabeled_test_dataset)
@@ -123,15 +123,27 @@ def summarize_performance_t3(d_model, g_model, size = 200):
     count = sum(predict_d>0.5)
     return count/size
 
-def tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path=None, log=None, step=0, save_performance=False, n_instance=0, logging=False ):
-    labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, log, step, save_performance)
+def write_on_log(path, text, end_section = False):
+    with open(path, "a") as file_object:
+        file_object.write(text)
+        if(end_section):
+            file_object.write("---")
+        file_object.write("\n")
+
+def write_model_on_log(path, model, end_section = False):
+    with open(path, "a") as file_object:
+        model.summary(print_fn=lambda x: file_object.write(x + '\n'))
+        if(end_section):
+            file_object.write("---")
+        file_object.write("\n")
+
+def tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path=None, step=0, save_performance=False, n_instance=0, logging=False ):
+    labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc = summarize_performance(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled_test_dataset, path, step, save_performance)
     t2_measured, t2_loss, t2_acc = summarize_performance_t2(d_model, c_model, labeled_test_dataset)
     t3_acc = summarize_performance_t3(d_model, g_model)
     if(logging):
-        print(str(step), labeled_loss, labeled_acc, unlabeled_loss, unlabeled_acc,' | ',t2_measured, t2_loss, t2_acc, ' | ', t3_acc)
-        log = log + str(n_instance+1)+','+str(step)+','+str(labeled_loss)+','+str(labeled_acc)+','+str(unlabeled_loss)+','+str(unlabeled_acc) +','+str(t2_measured) +','+str(t2_loss) +','+str(t2_acc)
-        log = log + ' | ' + str(t3_acc)+'\n'
-        return log
+        log_path = path +'.md'
+        write_on_log(log_path, "| "+str(n_instance+1)+' | '+str(step)+' | '+str(labeled_loss)+' | '+str(labeled_acc)+' | '+str(unlabeled_loss)+' | '+str(unlabeled_acc) +' | '+str(t2_measured) +' | '+str(t2_loss) +' | '+str(t2_acc) + ' | ' + str(t3_acc))
     else:
         print('Test 01 - Labeled Acc: ',labeled_acc)
         print('Test 01 - Labeled Loss: ',labeled_loss)
@@ -143,14 +155,13 @@ def tests(g_model, d_model, c_model, latent_dim, labeled_test_dataset, unlabeled
         return None
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size, path, n_instance, n_epochs=1000, n_batch=100):
+def train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size, path, n_instance, n_epochs=10000, n_batch=100):
     # calculate the number of batches per training epoch
     bat_per_epo = int(datasets['unlabeled_train_dataset'].shape[0] / n_batch)
     # calculate the number of training iterations
     n_steps = bat_per_epo * n_epochs
     # calculate the size of half a batch of samples
     half_batch = int(n_batch / 2)
-    log = ''
     for i in range(1, n_steps):
         # update supervised discriminator (c)
         [Xsup_real, ysup_real] = select_supervised_samples(datasets['labeled_train_dataset'], n_samples=10)
@@ -167,31 +178,35 @@ def train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size,
         # log = log + '>%d, c[%.3f,%.0f], d[%.3f,%.3f], g[%.3f] \n' % (i+1, c_loss, c_acc*100, d_loss1, d_loss2, g_loss)
         # evaluate the model performance every so often
         if (i) % 100 == 0:
-            log = tests(g_model, d_model, c_model, latent_dim, datasets['labeled_test_dataset'], datasets['unlabeled_test_dataset'], path, log, i, save_performance=True, n_instance=n_instance, logging=True)
-    return log
+            tests(g_model, d_model, c_model, latent_dim, datasets['labeled_test_dataset'], datasets['unlabeled_test_dataset'], path, i, save_performance=True, n_instance=n_instance, logging=True)
+
 
 def train_instances(datasets, net_model, path, n_instances = 1):
-    print("[INFO] Labeled Dataset size: ", len(datasets['labeled_train_dataset'][1])+len(datasets['labeled_test_dataset'][1])) 
-    print("[INFO] Unlabeled Dataset size: ", len(datasets['unlabeled_train_dataset'])+len(datasets['unlabeled_test_dataset'])) 
-    # log summary
-    log = ''
-    log = log + 'instance,step,labeled_loss,labeled_acc,unlabeled_loss,unlabeled_acc\n'
+    latent_dim = 100
+    d_model, c_model = net_model.define_discriminator()
+    g_model = net_model.define_generator(latent_dim)
+    gan_model = define_gan(g_model, d_model)
+    log_path = path +'.md'
+    write_on_log(log_path, "# Models Summary \n\n")
+    write_on_log(log_path, "## GAN Model \n")
+    write_model_on_log(log_path, c_model, True)
+    write_on_log(log_path, "## Supervised Discriminator \n")
+    write_model_on_log(log_path, c_model, True)
+    write_on_log(log_path, "## Unsupervised Discriminator \n")
+    write_model_on_log(log_path, d_model, True)
+    write_on_log(log_path, "## Generator \n")
+    write_model_on_log(log_path, g_model, True)
+    write_on_log(log_path, "Labeled Dataset size (train): "  +str(len(datasets['labeled_train_dataset'][1]))) 
+    write_on_log(log_path, "Labeled Dataset size (test): "   +str(len(datasets['labeled_test_dataset'][1]))) 
+    write_on_log(log_path, "Unlabeled Dataset size (train): "+str(len(datasets['unlabeled_train_dataset']))) 
+    write_on_log(log_path, "Unlabeled Dataset size: (test)"  +str(len(datasets['unlabeled_test_dataset'])), True) 
+    write_on_log(log_path, "## Tests \n")
+    write_on_log(log_path, '|instance|step|labeled_loss|labeled_acc|unlabeled_loss|unlabeled_acc|T2 unlabeled_acc|T2 loss|T2 labeled_acc|T3 acc|') 
+    write_on_log(log_path, '|--------|----|------------|-----------|--------------|-------------|----------------|-------|--------------|------|') 
     for i in range(n_instances):
-        # size of the latent space
-        latent_dim = 100
-        # create the discriminator models
         d_model, c_model = net_model.define_discriminator()
-        # create the generator
         g_model = net_model.define_generator(latent_dim)
-        # create the gan
         gan_model = define_gan(g_model, d_model)
-        # relative size of the test data
         test_size = 0.2
-        # train model
         train_log = train(g_model, d_model, c_model, gan_model, datasets, latent_dim, test_size, path, i)
-        # uptade the log
-        log = log + train_log
-    log_name = path +'.log'
-    log_file = open(log_name, "w")
-    log_file.write(log)
-    log_file.close()
+    

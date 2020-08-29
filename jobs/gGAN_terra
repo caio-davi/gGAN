@@ -8,7 +8,7 @@
 ##NECESSARY JOB SPECIFICATIONS
 
 #SBATCH --job-name=gGAN
-#SBATCH --time=12:00:00
+#SBATCH --time=40:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=2G
 #SBATCH --output=stdout.%j
