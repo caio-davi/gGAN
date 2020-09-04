@@ -1,4 +1,4 @@
-Here we describe all the steps to run the algorithms with the same configurations described in the [paper](https://arxiv.org/abs/2007.01200). You can find the source for this version on the [docker_version](./releases/tag/DockerVersion) tag.
+Here we describe all the steps to run the algorithms with the same configurations described in the [paper](https://arxiv.org/abs/2007.01200). You can find the source for this version on the [docker_version](https://github.com/caio-davi/gGAN/releases/tag/DockerVersion) tag.
 
 ## Getting Started
 
