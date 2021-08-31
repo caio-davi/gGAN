@@ -71,13 +71,7 @@ def pretty_plot_compare3_loss(name):
     plt.plot(data3['unlabeled_loss'], '-', color='g', label='Alelic Frequency 0.21 Unsupervised Loss')
     # plt.legend()
     plt.savefig(name+'.png')
-
-# def save_plot(name, data):
-#     instances = split_instances(data)
-#     for i in range(len(instances)):
-#         plt.plot(instances[i])
-#         plt.savefig(name+'_'+header[i]+'.png')
-
+    
 def save_plot(name, data):
     metrics = data.columns
     for metric in metrics:
@@ -91,11 +85,4 @@ file_name = 'test_\'model_SVM\'_2020-02-03T22:38:00.223495'
 full_name = path+file_name
 data = pd.read_csv(full_name+'.log')
 
-
-
-# save_plot(full_name, data)
-# pretty_plot_metrics(full_name, data)
-# pretty_plot_compare3_acc('comparing_acc')
-# pretty_plot_compare3_loss('comparing_loss')
-print('save in : ', file_name )
 plot_metrics(file_name, data)
