@@ -36,7 +36,6 @@ def load_datasets(path, afd, dim, syn, log_path, random=True):
         if(not pre_processing.check_current_sampling(afd)):
             print("[ERROR] Current synthetic data doesn't match [afd] option.", dim)
             exit()
-        print('-------------ENTRA AQUI -------------------------------------')
         print("[INFO] Loading synthetic labeled data...")    
         labeled_dataset = load_data.load_labeled_samples(path + 'data/synthetic/labeled')
     else:
